@@ -15,7 +15,7 @@ fun main(args: Array<String>) {
 
     fun redraw() {
         val viz = streamGraph()
-        viz.renderer = JsCanvasRenderer(context, viz)
+        viz.renderer = JsCanvasRenderer(viz, context)
         viz.render()
     }
 

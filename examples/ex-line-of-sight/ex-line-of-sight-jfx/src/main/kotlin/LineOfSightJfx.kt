@@ -22,7 +22,7 @@ class LineOfSightJfx : Application() {
         val root = Group()
         val canvas = Canvas(vizWidth, vizHeight)
         val viz = lineOfSightViz()
-        JFxVizRenderer(canvas,viz)
+        JFxVizRenderer(viz, canvas)
 
         root.children.add(canvas)
 

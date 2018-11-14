@@ -27,7 +27,7 @@ class ChordJfx : Application() {
             val canvas = Canvas(chordSize.width, chordSize.height)
             root.children.add(canvas)
             val viz = chordViz()
-            JFxVizRenderer(canvas, viz)
+            JFxVizRenderer(viz, canvas)
             viz.render()
         }
     }

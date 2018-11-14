@@ -35,7 +35,8 @@ class RenderingOnDeviceTest {
         val bitmap = Bitmap.createBitmap(canvasSize, canvasSize, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         val androidCanvasRenderer = AndroidCanvasRenderer(
-                InstrumentationRegistry.getContext(), viz, canvas)
+            viz, InstrumentationRegistry.getContext(), canvas
+        )
         viz.renderer = androidCanvasRenderer
         viz.render()
         val appContext = InstrumentationRegistry.getTargetContext()

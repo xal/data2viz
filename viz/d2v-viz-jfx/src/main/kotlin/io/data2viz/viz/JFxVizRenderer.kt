@@ -1,21 +1,18 @@
 package io.data2viz.viz
 
-import io.data2viz.color.*
 import io.data2viz.timer.Timer
 import io.data2viz.timer.timer
-import javafx.geometry.VPos
 import javafx.scene.canvas.Canvas
-import javafx.scene.paint.CycleMethod
-import javafx.scene.paint.Stop
-import javafx.scene.text.Font
-import javafx.scene.text.TextAlignment
 import kotlin.math.PI
 
 
 /**
  * JFx Canvas version. See https://docs.oracle.com/javafx/2/canvas/jfxpub-canvas.htm
  */
-class JFxVizRenderer(val canvas: Canvas, val viz: Viz) : VizRenderer {
+class JFxVizRenderer(
+    override val viz: Viz,
+    val canvas: Canvas
+) : VizRenderer {
 
     internal val gc = canvas.graphicsContext2D
 
@@ -26,7 +23,7 @@ class JFxVizRenderer(val canvas: Canvas, val viz: Viz) : VizRenderer {
     }
 
 
-    override fun render(viz: Viz) {
+    override fun render() {
         gc.clearRect(.0, .0, canvas.width, canvas.height)
         viz.layers.forEach { layer ->
             if (layer.visible)
@@ -42,7 +39,7 @@ class JFxVizRenderer(val canvas: Canvas, val viz: Viz) : VizRenderer {
                 }
             }
             animationTimers += timer {
-                render(viz)
+                render()
             }
         }
     }

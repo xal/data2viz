@@ -6,7 +6,12 @@ package io.data2viz.viz
  */
 interface VizRenderer {
 
-    fun render(viz: Viz)
+    val viz:Viz
+
+    /**
+     * Perform the rendering in the specific platform.
+     */
+    fun render()
 
     /**
      * Starts all animations

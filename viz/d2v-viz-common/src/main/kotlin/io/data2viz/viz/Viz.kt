@@ -37,7 +37,7 @@ class Viz(var activeLayer:Layer = Layer()): HasChildren by activeLayer, HasSize{
     lateinit var renderer: VizRenderer
 
     fun render() {
-        renderer.render(this)
+        renderer.render()
     }
 
     fun startAnimations(){

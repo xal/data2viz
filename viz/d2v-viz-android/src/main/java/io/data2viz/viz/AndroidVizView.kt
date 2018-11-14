@@ -5,9 +5,17 @@ import android.graphics.*
 import android.view.*
 import io.data2viz.timer.*
 
+
+/**
+ * Create an AndroidVizView from the viz and the android context.
+ */
+fun Viz.toView(context: Context): AndroidVizView = AndroidVizView(this, context)
+
+
+
 class AndroidVizView(val viz: Viz, context: Context) : View(context) {
 
-    private val renderer: AndroidCanvasRenderer = AndroidCanvasRenderer(context, viz)
+    private val renderer: AndroidCanvasRenderer = AndroidCanvasRenderer(viz, context)
     private val timers = mutableListOf<Timer>()
 
     fun startAnimations() {
@@ -52,7 +60,7 @@ class AndroidVizView(val viz: Viz, context: Context) : View(context) {
         }
 
         renderer.canvas = canvas
-        renderer.render(viz)
+        renderer.render()
     }
 
 }

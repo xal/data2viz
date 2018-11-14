@@ -4,7 +4,6 @@ import io.data2viz.viz.JFxVizRenderer
 import javafx.application.Application
 import javafx.collections.FXCollections
 import javafx.geometry.Insets
-import javafx.scene.Group
 import javafx.scene.Scene
 import javafx.scene.canvas.Canvas
 import javafx.scene.control.ChoiceBox
@@ -17,7 +16,7 @@ class D2vStreamGraphJVM : Application() {
 
     val canvas = Canvas(width, height)
     val viz = streamGraph()
-    val renderer = JFxVizRenderer(canvas, viz)
+    val renderer = JFxVizRenderer(viz, canvas)
 
     init {
         viz.renderer = renderer

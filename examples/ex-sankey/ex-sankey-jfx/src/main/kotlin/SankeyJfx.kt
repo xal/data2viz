@@ -26,7 +26,7 @@ class SankeyJfx : Application() {
             val canvas = Canvas(vizWidth, vizHeight)
             root.children.add(canvas)
             val viz = sankeyViz()
-            JFxVizRenderer(canvas, viz)
+            JFxVizRenderer(viz, canvas)
             viz.render()
         }
     }

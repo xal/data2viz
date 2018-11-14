@@ -11,17 +11,17 @@ val paint = Paint().apply {
     isAntiAlias = true
 }
 
-
-fun Viz.toView(context: Context): AndroidVizView = AndroidVizView(this, context)
-
-
 fun Paint.getNumberHeight(): Int {
     val rect = android.graphics.Rect()
     getTextBounds("a", 0, 1, rect)
     return rect.height()
 }
 
-class AndroidCanvasRenderer(val context: Context, val viz: Viz, var canvas: Canvas = Canvas()) : VizRenderer {
+class AndroidCanvasRenderer(
+    override val viz: Viz,
+    val context: Context,
+    var canvas: Canvas = Canvas()
+) : VizRenderer {
 
     var scale = 1F
 
@@ -32,7 +32,7 @@ class AndroidCanvasRenderer(val context: Context, val viz: Viz, var canvas: Canv
         viz.renderer = this
     }
 
-    override fun render(viz: Viz) {
+    override fun render() {
         viz.layers.forEach { layer ->
             if (layer.visible)
                 layer.render(this)
@@ -47,7 +47,7 @@ class AndroidCanvasRenderer(val context: Context, val viz: Viz, var canvas: Canv
                 }
             }
             animationTimers += timer {
-                render(viz)
+                render()
             }
         }
     }
