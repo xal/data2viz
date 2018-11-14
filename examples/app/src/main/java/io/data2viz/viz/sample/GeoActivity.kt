@@ -3,17 +3,13 @@ package io.data2viz.viz.sample
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import io.data2viz.examples.geo.geoViz
-import io.data2viz.geo.path.geoPath
-import io.data2viz.geo.projection.orthographic
-import io.data2viz.geojson.GeoJsonObject
 import io.data2viz.geojson.toGeoJsonObject
 import io.data2viz.viz.*
-import kotlin.math.min
 
 
 class GeoActivity : AppCompatActivity() {
 
-    lateinit var view: VizView
+    lateinit var view: AndroidVizView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

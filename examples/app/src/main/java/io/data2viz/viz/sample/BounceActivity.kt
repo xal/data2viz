@@ -6,14 +6,14 @@ import io.data2viz.color.Colors
 import io.data2viz.timer.Timer
 import io.data2viz.timer.timer
 import io.data2viz.viz.CircleNode
-import io.data2viz.viz.VizView
+import io.data2viz.viz.AndroidVizView
 import io.data2viz.viz.toView
 import io.data2viz.viz.viz
 
 
 class BounceActivity : AppCompatActivity() {
 
-    lateinit private var view: VizView
+    lateinit private var view: AndroidVizView
     lateinit private var timer: Timer
     lateinit var circle: CircleNode
     val viz = viz {

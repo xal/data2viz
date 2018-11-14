@@ -63,7 +63,7 @@ val viz = viz {
 
 fun randomForceNodes() = (0 until nodeCount).map { ForceNode(it, Random.nextDouble() * canvasWidth, Random.nextDouble() * canvasHeight) }
 
-lateinit var view: VizView
+lateinit var view: AndroidVizView
 
 fun stopTimers() {
     viz.stopAnimations()
