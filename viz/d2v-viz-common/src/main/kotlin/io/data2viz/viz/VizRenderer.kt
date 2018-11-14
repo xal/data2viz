@@ -13,13 +13,4 @@ interface VizRenderer {
      */
     fun render()
 
-    /**
-     * Starts all animations
-     */
-    fun startAnimations()
-
-    /**
-     * Stops all animations.
-     */
-    fun stopAnimations()
 }

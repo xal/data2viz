@@ -12,14 +12,14 @@ import kotlin.math.PI
 class JFxVizRenderer(
     override val viz: Viz,
     val canvas: Canvas
-) : VizRenderer {
+) : View {
 
     internal val gc = canvas.graphicsContext2D
 
     private val animationTimers = mutableListOf<Timer>()
 
     init {
-        viz.renderer = this
+        viz.view = this
     }
 
 

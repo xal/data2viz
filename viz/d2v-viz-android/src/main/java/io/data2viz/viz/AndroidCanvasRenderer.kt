@@ -21,7 +21,7 @@ class AndroidCanvasRenderer(
     override val viz: Viz,
     val context: Context,
     var canvas: Canvas = Canvas()
-) : VizRenderer {
+) : View {
 
     var scale = 1F
 
@@ -29,7 +29,7 @@ class AndroidCanvasRenderer(
 
 
     init {
-        viz.renderer = this
+        viz.view = this
     }
 
     override fun render() {

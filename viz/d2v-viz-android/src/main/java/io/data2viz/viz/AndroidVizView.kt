@@ -2,9 +2,9 @@ package io.data2viz.viz
 
 import android.content.*
 import android.graphics.*
-import android.view.*
 import io.data2viz.timer.*
 
+typealias AView = android.view.View
 
 /**
  * Create an AndroidVizView from the viz and the android context.
@@ -13,7 +13,7 @@ fun Viz.toView(context: Context): AndroidVizView = AndroidVizView(this, context)
 
 
 
-class AndroidVizView(val viz: Viz, context: Context) : View(context) {
+class AndroidVizView(val viz: Viz, context: Context) : AView(context) {
 
     private val renderer: AndroidCanvasRenderer = AndroidCanvasRenderer(viz, context)
     private val timers = mutableListOf<Timer>()

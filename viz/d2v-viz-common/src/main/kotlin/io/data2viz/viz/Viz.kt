@@ -7,7 +7,7 @@ import io.data2viz.geom.HasSize
 /**
  * Viz is the base element of a visualization.
  *
- * It is associated with a renderer which is used to perform the rendering depending on
+ * It is associated with a view which is used to perform the rendering depending on
  * the current platform.
  *
  * It has at least one layer (the activeLayer). Layers provides a way of managing what is
@@ -34,18 +34,18 @@ class Viz(var activeLayer:Layer = Layer()): HasChildren by activeLayer, HasSize{
 
     private var resizeBehavior:((Double, Double) -> Unit)? = null
 
-    lateinit var renderer: VizRenderer
+    lateinit var view: View
 
     fun render() {
-        renderer.render()
+        view.render()
     }
 
     fun startAnimations(){
-        renderer.startAnimations()
+        view.startAnimations()
     }
 
     fun stopAnimations(){
-        renderer.stopAnimations()
+        view.stopAnimations()
     }
 
     internal val animations = mutableListOf<(Double)-> Unit>()

@@ -19,7 +19,7 @@ class D2vStreamGraphJVM : Application() {
     val renderer = JFxVizRenderer(viz, canvas)
 
     init {
-        viz.renderer = renderer
+        viz.view = renderer
     }
 
     companion object {

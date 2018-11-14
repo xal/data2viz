@@ -7,7 +7,7 @@ import kotlin.browser.document
 
 
 /**
- * Allows to quickly bind a renderer on an existing canvas in the current document.
+ * Allows to quickly bind a view on an existing canvas in the current document.
  * This is a way to display multiple visualizations in a unique page. Each viz
  * location in the page can be prepared with by providing a `canvas` tag with a
  * unique id.
@@ -57,7 +57,7 @@ fun Viz.bindRendererOn(canvas: HTMLCanvasElement) {
         context.scale(pixelRatio, pixelRatio)
     }
 
-    this.renderer = JsCanvasRenderer(this, context)
+    this.view = JsCanvasRenderer(this, context)
 
     if (config.autoUpdate) {
         render()
@@ -81,7 +81,7 @@ private fun getPixelRatio(): Double{
 class JsCanvasRenderer(
     override val viz: Viz,
     val context: CanvasRenderingContext2D
-) : VizRenderer {
+) : View {
 
     private val animationTimers = mutableListOf<Timer>()
 

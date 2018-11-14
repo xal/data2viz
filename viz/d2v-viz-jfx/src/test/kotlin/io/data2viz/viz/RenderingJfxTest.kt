@@ -48,7 +48,7 @@ class RenderingJfxTest : ApplicationTest() {
         val canvas = Canvas(size.toDouble(), size.toDouble())
         jfxRoot.children.add(canvas)
         val renderer = JFxVizRenderer(viz, canvas)
-        viz.renderer = renderer
+        viz.view = renderer
         viz.render()
 
         

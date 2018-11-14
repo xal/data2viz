@@ -38,7 +38,7 @@ class RenderingOnDeviceTest {
         )
 
         val viz = viz {
-            renderer = androidCanvasRenderer
+            view = androidCanvasRenderer
             add(rendereredNode)
         }
         viz.render()

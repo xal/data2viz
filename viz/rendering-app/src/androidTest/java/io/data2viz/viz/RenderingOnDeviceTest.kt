@@ -37,7 +37,7 @@ class RenderingOnDeviceTest {
         val androidCanvasRenderer = AndroidCanvasRenderer(
             viz, InstrumentationRegistry.getContext(), canvas
         )
-        viz.renderer = androidCanvasRenderer
+        viz.view = androidCanvasRenderer
         viz.render()
         val appContext = InstrumentationRegistry.getTargetContext()
         val dir = getPrivateAlbumStorageDir(appContext, "data2canvas")
