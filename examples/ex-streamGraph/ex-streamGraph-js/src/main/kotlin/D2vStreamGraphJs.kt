@@ -1,5 +1,5 @@
 import io.data2viz.examples.streamGraph.*
-import io.data2viz.viz.JsCanvasRenderer
+import io.data2viz.viz.*
 import kotlinx.html.*
 import kotlinx.html.dom.append
 import org.w3c.dom.CanvasRenderingContext2D
@@ -15,7 +15,7 @@ fun main(args: Array<String>) {
 
     fun redraw() {
         val viz = streamGraph()
-        viz.renderer = JsCanvasRenderer(viz, context)
+        viz.bindRendererOn(canvas)
         viz.render()
     }
 
