@@ -71,8 +71,12 @@ actual class KMouseDoubleClick {
 
 actual class KMouseMove {
     actual companion object MouseMoveEventListener : KEventListener<KMouseEvent> {
-        override fun addNativeListener(target: Any, listener: (KMouseEvent) -> Unit): Any =
+        override fun addNativeListener(target: Any, listener: (KMouseEvent) -> Unit) {
+            // Add listeners for both events MOVED & DRAGGED, because MOVED not fires when any button pressed
+            // but JS behaviour is different
             createSimpleJvmEventHandle(listener, target, MouseEvent.MOUSE_MOVED)
+            createSimpleJvmEventHandle(listener, target, MouseEvent.MOUSE_DRAGGED)
+        }
     }
 }
 
