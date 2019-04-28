@@ -38,15 +38,15 @@ actual class KMouseLeave {
 
 actual class KMouseOut {
     actual companion object MouseOutEventListener : KEventListener<KMouseEvent> {
-        override fun addNativeListener(target: Any, listener: (KMouseEvent) -> Unit): Any
-                = createSimpleJvmEventHandle(listener, target, MouseEvent.MOUSE_EXITED_TARGET)
+        override fun addNativeListener(target: Any, listener: (KMouseEvent) -> Unit): Any =
+            createSimpleJvmEventHandle(listener, target, MouseEvent.MOUSE_EXITED_TARGET)
     }
 }
 
 actual class KMouseOver {
     actual companion object MouseOverEventListener : KEventListener<KMouseEvent> {
-        override fun addNativeListener(target: Any, listener: (KMouseEvent) -> Unit): Any
-            = createSimpleJvmEventHandle(listener, target, MouseEvent.MOUSE_ENTERED_TARGET)
+        override fun addNativeListener(target: Any, listener: (KMouseEvent) -> Unit): Any =
+            createSimpleJvmEventHandle(listener, target, MouseEvent.MOUSE_ENTERED_TARGET)
 
     }
 }
@@ -71,11 +71,20 @@ actual class KMouseDoubleClick {
 
 actual class KMouseMove {
     actual companion object MouseMoveEventListener : KEventListener<KMouseEvent> {
-        override fun addNativeListener(target: Any, listener: (KMouseEvent) -> Unit) {
+        override fun addNativeListener(target: Any, listener: (KMouseEvent) -> Unit): Any {
             // Add listeners for both events MOVED & DRAGGED, because MOVED not fires when any button pressed
             // but JS behaviour is different
-            createSimpleJvmEventHandle(listener, target, MouseEvent.MOUSE_MOVED)
-            createSimpleJvmEventHandle(listener, target, MouseEvent.MOUSE_DRAGGED)
+
+            val handler: (MouseEvent) -> Unit = { evt: MouseEvent ->
+                val kevent = evt.convertToKEvent()
+                listener(kevent)
+            }
+            val jfxEvents = listOf(MouseEvent.MOUSE_DRAGGED, MouseEvent.MOUSE_MOVED)
+            jfxEvents.forEach {
+                (target as Canvas).addEventHandler(it, handler)
+            }
+            return JvmEventHandle(jfxEvents, handler)
+
         }
     }
 }
@@ -100,7 +109,9 @@ private fun createSimpleJvmEventHandle(
     return JvmEventHandle(jfxEvent, handler)
 }
 
-data class JvmEventHandle<T : Event?>(val type: EventType<T>, val handler: (MouseEvent) -> Unit)
+data class JvmEventHandle<T : Event?>(val types: List<EventType<T>>, val handler: (MouseEvent) -> Unit) {
+    constructor(type: EventType<T>, handler: (MouseEvent) -> Unit) : this(listOf(type), handler)
+}
 
 /**
  * Add an event listener on a a viz.
