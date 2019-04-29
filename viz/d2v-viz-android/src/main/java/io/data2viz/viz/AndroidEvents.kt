@@ -1,14 +1,13 @@
 package io.data2viz.viz
 
 import android.graphics.Rect
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 
 
 actual class KPointerMove {
     actual companion object MouseMoveEventListener : KEventListener<KPointerEvent> {
-        override fun addNativeListener(target: Any, listener: (KPointerEvent) -> Unit): Any =
+        override fun addNativeListener(target: Any, listener: (KPointerEvent) -> Unit): NativeListenerDisposable =
             addSimpleAndroidEventHandle(target, listener, MotionEvent.ACTION_MOVE)
 
     }
@@ -17,14 +16,14 @@ actual class KPointerMove {
 
 actual class KPointerDown {
     actual companion object MouseDownEventListener : KEventListener<KPointerEvent> {
-        override fun addNativeListener(target: Any, listener: (KPointerEvent) -> Unit): Any =
+        override fun addNativeListener(target: Any, listener: (KPointerEvent) -> Unit): NativeListenerDisposable =
             addSimpleAndroidEventHandle(target, listener, MotionEvent.ACTION_DOWN)
     }
 }
 
 actual class KPointerUp {
     actual companion object MouseUpEventListener : KEventListener<KPointerEvent> {
-        override fun addNativeListener(target: Any, listener: (KPointerEvent) -> Unit): Any =
+        override fun addNativeListener(target: Any, listener: (KPointerEvent) -> Unit): NativeListenerDisposable =
             addSimpleAndroidEventHandle(target, listener, MotionEvent.ACTION_UP)
     }
 }
@@ -34,17 +33,14 @@ actual class KPointerEnter {
 
         var isLastMoveInBounds = false
 
-        override fun addNativeListener(target: Any, listener: (KPointerEvent) -> Unit): Any {
+        override fun addNativeListener(target: Any, listener: (KPointerEvent) -> Unit): NativeListenerDisposable {
 
             val renderer = target as AndroidCanvasRenderer
 
             val action = MotionEvent.ACTION_MOVE
-            val handler: (MotionEvent) -> Unit = { evt: MotionEvent ->
-                val kevent = evt.convertToKEvent()
-                listener(kevent)
-            }
 
-            renderer.onTouchListeners.add(object : VizTouchListener {
+
+            val handler = object : VizTouchListener {
                 override fun onTouchEvent(view: View, event: MotionEvent?): Boolean {
 
                     if (event?.action != action) {
@@ -56,7 +52,8 @@ actual class KPointerEnter {
 
                     if (isLastMoveInBounds != currentMoveInBounds) {
                         if (currentMoveInBounds) {
-                            handler(event)
+                            val kevent = event.convertToKEvent()
+                            listener(kevent)
                         }
                     }
                     isLastMoveInBounds = currentMoveInBounds
@@ -64,8 +61,8 @@ actual class KPointerEnter {
                     // handle only touches in view bounds
                     return currentMoveInBounds
                 }
-            })
-            return AndroidEventHandle(action, handler)
+            }
+            return AndroidEventHandle(renderer, action, handler).also { it.init() }
         }
     }
 }
@@ -75,17 +72,13 @@ actual class KPointerLeave {
 
         var isLastMoveInBounds = false
 
-        override fun addNativeListener(target: Any, listener: (KPointerEvent) -> Unit): Any {
+        override fun addNativeListener(target: Any, listener: (KPointerEvent) -> Unit): NativeListenerDisposable {
 
             val renderer = target as AndroidCanvasRenderer
 
             val action = MotionEvent.ACTION_MOVE
-            val handler: (MotionEvent) -> Unit = { evt: MotionEvent ->
-                val kevent = evt.convertToKEvent()
-                listener(kevent)
-            }
 
-            renderer.onTouchListeners.add(object : VizTouchListener {
+            val handler = object : VizTouchListener {
                 override fun onTouchEvent(view: View, event: MotionEvent?): Boolean {
 
                     if (event?.action != action) {
@@ -97,7 +90,8 @@ actual class KPointerLeave {
 
                     if (isLastMoveInBounds != currentMoveInBounds) {
                         if (!currentMoveInBounds) {
-                            handler(event)
+                            val kevent = event.convertToKEvent()
+                            listener(kevent)
                         }
                     }
                     isLastMoveInBounds = currentMoveInBounds
@@ -105,12 +99,11 @@ actual class KPointerLeave {
                     // handle only touches in view bounds
                     return currentMoveInBounds
                 }
-            })
-            return AndroidEventHandle(action, handler)
+            }
+            return AndroidEventHandle(renderer, action, handler).also { it.init() }
         }
     }
 }
-
 
 
 actual class KPointerClick {
@@ -119,16 +112,12 @@ actual class KPointerClick {
         const val maxTimeDiffForDetectClick = 500
         var lastTimeActionDown: Long? = null
 
-        override fun addNativeListener(target: Any, listener: (KPointerEvent) -> Unit): Any {
+        override fun addNativeListener(target: Any, listener: (KPointerEvent) -> Unit): NativeListenerDisposable {
             val renderer = target as AndroidCanvasRenderer
 
             val action = MotionEvent.ACTION_UP
-            val handler: (MotionEvent) -> Unit = { evt: MotionEvent ->
-                val kevent = evt.convertToKEvent()
-                listener(kevent)
-            }
 
-            renderer.onTouchListeners.add(object : VizTouchListener {
+            val handler = object : VizTouchListener {
                 override fun onTouchEvent(view: View, event: MotionEvent?): Boolean {
                     when (event?.action) {
                         MotionEvent.ACTION_DOWN -> lastTimeActionDown = System.currentTimeMillis()
@@ -137,15 +126,16 @@ actual class KPointerClick {
                             if (timeActionDown != null) {
                                 val diff = System.currentTimeMillis() - timeActionDown
                                 if (diff < maxTimeDiffForDetectClick) {
-                                    handler(event)
+                                    val kevent = event.convertToKEvent()
+                                    listener(kevent)
                                 }
                             }
                         }
                     }
                     return false
                 }
-            })
-            return AndroidEventHandle(action, handler)
+            }
+            return AndroidEventHandle(renderer, action, handler).also { it.init() }
         }
     }
 }
@@ -158,16 +148,13 @@ actual class KPointerDoubleClick {
         var lastTimeActionDown: Long? = null
         var lastTimeClick: Long? = null
 
-        override fun addNativeListener(target: Any, listener: (KPointerEvent) -> Unit): Any {
+        override fun addNativeListener(target: Any, listener: (KPointerEvent) -> Unit): NativeListenerDisposable {
             val renderer = target as AndroidCanvasRenderer
 
             val action = MotionEvent.ACTION_UP
-            val handler: (MotionEvent) -> Unit = { evt: MotionEvent ->
-                val kevent = evt.convertToKEvent()
-                listener(kevent)
-            }
 
-            renderer.onTouchListeners.add(object : VizTouchListener {
+
+            val handler = object : VizTouchListener {
                 override fun onTouchEvent(view: View, event: MotionEvent?): Boolean {
                     when (event?.action) {
                         MotionEvent.ACTION_DOWN -> lastTimeActionDown = System.currentTimeMillis()
@@ -182,7 +169,8 @@ actual class KPointerDoubleClick {
                                     if (timeClick != null) {
                                         val diffClicks = timeClick - now
                                         if (diffClicks < maxTimeDiffForDetectDoubleClick) {
-                                            handler(event)
+                                            val kevent = event.convertToKEvent()
+                                            listener(kevent)
                                         }
                                     }
                                     lastTimeClick = now
@@ -192,8 +180,8 @@ actual class KPointerDoubleClick {
                     }
                     return false
                 }
-            })
-            return AndroidEventHandle(action, handler)
+            }
+            return AndroidEventHandle(renderer, action, handler).also { it.init() }
         }
     }
 }
@@ -219,48 +207,48 @@ private fun addSimpleAndroidEventHandle(
     action: Int
 ): AndroidEventHandle {
     val renderer = target as AndroidCanvasRenderer
-    val handler: (MotionEvent) -> Unit = { evt: MotionEvent ->
-        val kevent = evt.convertToKEvent()
-        listener(kevent)
-    }
 
-    renderer.onTouchListeners.add(object : VizTouchListener {
+    val handler = object : VizTouchListener {
         override fun onTouchEvent(view: View, event: MotionEvent?): Boolean {
 
             if (event?.action == action) {
-                handler(event)
+                val kevent = event.convertToKEvent()
+                listener(kevent)
             }
             return true
         }
-    })
+    }
 
-    return AndroidEventHandle(action, handler)
+    return AndroidEventHandle(renderer, action, handler).also { it.init() }
 }
 
 
-data class AndroidEventHandle(val type: Int, val handler: (MotionEvent) -> Unit)
+data class AndroidEventHandle(val renderer: AndroidCanvasRenderer, val type: Int, val handler: VizTouchListener) :
+    NativeListenerDisposable {
 
 
-/**
- * Add an event listener on a a viz.
- * @return an handler to eventually remove later.
- */
-actual fun <T> Viz.on(
-    eventListener: KEventListener<T>,
-    listener: (T) -> Unit
-): Any {
-    val androidCanvasRenderer = this.renderer as AndroidCanvasRenderer
-    return eventListener.addNativeListener(androidCanvasRenderer, listener)
+    fun init() {
+        renderer.onTouchListeners.add(handler)
+    }
+
+
+    override fun dispose() {
+        renderer.onTouchListeners.remove(handler)
+    }
+
+}
+
+
+actual fun <T> VizRenderer.addNativeEventListener(handle: KEventHandle<T>): NativeListenerDisposable where T : KEvent {
+
+    val androidCanvasRenderer = this as AndroidCanvasRenderer
+    return handle.eventListener.addNativeListener(androidCanvasRenderer, handle.listener)
 }
 
 
 private fun MotionEvent.convertToKEvent(): KPointerEvent {
     val KPointerMoveEvent = io.data2viz.viz.KPointerEvent(
-        io.data2viz.geom.Point(x.toDouble(), y.toDouble()),
-        altKey = false,
-        ctrlKey = false,
-        shiftKey = false,
-        metaKey = false
+        io.data2viz.geom.Point(x.toDouble(), y.toDouble())
     )
     return KPointerMoveEvent
 }

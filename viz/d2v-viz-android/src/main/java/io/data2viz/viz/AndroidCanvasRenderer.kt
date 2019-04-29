@@ -103,6 +103,8 @@ class AndroidCanvasRenderer(
     var canvas: Canvas = Canvas()
 ) : VizRenderer {
 
+
+
     val onTouchListeners = mutableListOf<VizTouchListener>()
 
     var scale = 1F
