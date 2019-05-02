@@ -7,6 +7,8 @@ import javafx.event.EventHandler
 import javafx.event.EventType
 import javafx.scene.canvas.Canvas
 import javafx.scene.input.MouseEvent
+import javafx.scene.input.ScrollEvent
+import javafx.scene.input.ZoomEvent
 
 
 actual class KPointerDown {
@@ -63,6 +65,40 @@ actual class KPointerClick {
             createSimpleJvmEventHandle(listener, target, MouseEvent.MOUSE_CLICKED)
     }
 }
+
+actual class KZoom {
+    actual companion object ZoomEventListener : KEventListener<KZoomEvent> {
+        override fun addNativeListener(target: Any, listener: (KZoomEvent) -> Unit): Disposable {
+
+            val canvas = target as Canvas
+
+            canvas.setOnZoom { event: ZoomEvent ->
+
+                val zoomFactor0to2 = event.zoomFactor
+                val zoomFactorWithSign = zoomFactor0to2 - 1
+                val kZoomDeltaValue = zoomFactorWithSign * 100 * canvas.scaleY
+                listener(KZoomEvent(kZoomDeltaValue))
+            }
+
+            canvas.setOnScroll { event: ScrollEvent ->
+
+                //                println("event deltaX = ${event.deltaX} deltaY = ${event.deltaY} isControlDown = ${event.isControlDown}")
+                if (event.isControlDown) {
+                    listener(KZoomEvent(event.deltaY))
+                }
+            }
+
+            return object : Disposable {
+                override fun dispose() {
+                    canvas.onZoom = null
+                    canvas.onScroll = null
+                }
+
+            }
+        }
+    }
+}
+
 
 private fun createSimpleJvmEventHandle(
     listener: (KPointerEvent) -> Unit,

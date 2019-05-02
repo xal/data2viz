@@ -6,15 +6,8 @@ import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.EventListener
 import org.w3c.dom.events.MouseEvent
+import org.w3c.dom.events.WheelEvent
 
-//fun <T> Element.on(eventListener: KEventListener<T>, listener: (T) -> Unit): Any {
-//    return eventListener.addNativeListener(this, listener)
-//}
-//
-//private fun Element.removeListener(listener: Any) {
-//    val jsListener = listener.unsafeCast<JsListener>()
-//    this.removeEventListener(jsListener.type, jsListener.listener as EventListener, null)
-//}
 
 actual class KPointerDown {
     actual companion object MouseDownEventListener : KEventListener<KPointerEvent> {
@@ -65,6 +58,24 @@ actual class KPointerClick {
             createJsListener(target, listener, "click")
     }
 }
+
+actual class KZoom {
+    actual companion object ZoomEventListener : KEventListener<KZoomEvent> {
+        override fun addNativeListener(target: Any, listener: (KZoomEvent) -> Unit): Disposable {
+            val htmlElement = target.unsafeCast<HTMLElement>()
+            val nativeListener = object : EventListener {
+                override fun handleEvent(event: Event) {
+                    (event as WheelEvent).apply {
+                        val kZoomDelta = deltaY * -1 // invert value for same behaviour as jfx
+                        listener(KZoomEvent(kZoomDelta))
+                    }
+                }
+            }
+            return JsListener(htmlElement, "wheel", nativeListener).also { it.init() }
+        }
+    }
+}
+
 
 private fun createJsListener(
     target: Any,

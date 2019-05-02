@@ -1,8 +1,8 @@
 package io.data2viz.viz
 
 import android.graphics.Rect
-import android.util.Log
 import android.view.MotionEvent
+import android.view.ScaleGestureDetector
 import android.view.View
 
 
@@ -97,6 +97,53 @@ actual class KPointerDoubleClick {
                     }
                 }
             ).also { it.init() }
+    }
+}
+
+actual class KZoom {
+    actual companion object ZoomEventListener : KEventListener<KZoomEvent> {
+        override fun addNativeListener(target: Any, listener: (KZoomEvent) -> Unit): Disposable {
+
+
+            val androidCanvasRenderer = target as AndroidCanvasRenderer
+            val gestureDetector = ScaleGestureDetector(androidCanvasRenderer.context, object: ScaleGestureDetector.OnScaleGestureListener {
+
+                var lastScaleFactor = 1.0 // start value is 1.0
+                override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
+                    return true
+                }
+
+                override fun onScaleEnd(detector: ScaleGestureDetector) {
+
+                }
+
+                override fun onScale(detector: ScaleGestureDetector): Boolean {
+                    val currentScaleFactor = detector.scaleFactor
+
+                    val deltaScaleFactor = currentScaleFactor - lastScaleFactor
+                    lastScaleFactor = currentScaleFactor.toDouble()
+
+                    listener(KZoomEvent(deltaScaleFactor))
+
+                    return false
+                }
+
+            })
+            val gestureDetectorVizTouchListener = object:VizTouchListener {
+                override fun onTouchEvent(view: View, event: MotionEvent?): Boolean {
+                    return gestureDetector.onTouchEvent(event)
+                }
+            }
+
+            androidCanvasRenderer.onTouchListeners.add(gestureDetectorVizTouchListener)
+
+            return object : Disposable {
+                override fun dispose() {
+                    androidCanvasRenderer.onTouchListeners.remove(gestureDetectorVizTouchListener)
+                }
+
+            }
+        }
     }
 }
 
