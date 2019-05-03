@@ -40,7 +40,7 @@ actual class KPointerEnter {
                     }
                 }
             }
-            return AndroidEventHandle(renderer, MotionEvent.ACTION_MOVE, handler).also { it.init() }
+            return AndroidActionEventHandle(renderer, MotionEvent.ACTION_MOVE, handler).also { it.init() }
         }
     }
 }
@@ -60,7 +60,7 @@ actual class KPointerLeave {
                     }
                 }
             }
-            return AndroidEventHandle(renderer, MotionEvent.ACTION_MOVE, handler).also { it.init() }
+            return AndroidActionEventHandle(renderer, MotionEvent.ACTION_MOVE, handler).also { it.init() }
         }
     }
 }
@@ -68,7 +68,7 @@ actual class KPointerLeave {
 actual class KPointerClick {
     actual companion object PointerClickEventListener : KEventListener<KPointerEvent> {
         override fun addNativeListener(target: Any, listener: (KPointerEvent) -> Unit): Disposable =
-            AndroidEventHandle(
+            AndroidActionEventHandle(
                 target as AndroidCanvasRenderer,
                 MotionEvent.ACTION_UP,
                 object : DetectClickVizTouchListener() {
@@ -87,7 +87,7 @@ actual class KPointerDoubleClick {
     actual companion object PointerDoubleClickEventListener : KEventListener<KPointerEvent> {
 
         override fun addNativeListener(target: Any, listener: (KPointerEvent) -> Unit): Disposable =
-            AndroidEventHandle(
+            AndroidActionEventHandle(
                 target as AndroidCanvasRenderer,
                 MotionEvent.ACTION_UP,
                 object : DetectDoubleClickVizTouchListener() {
@@ -102,47 +102,37 @@ actual class KPointerDoubleClick {
 
 actual class KZoom {
     actual companion object ZoomEventListener : KEventListener<KZoomEvent> {
+        const val minZoomDeltaValue = -100.0
+        const val maxZoomDeltaValue = 100.0
         override fun addNativeListener(target: Any, listener: (KZoomEvent) -> Unit): Disposable {
 
 
             val androidCanvasRenderer = target as AndroidCanvasRenderer
-            val gestureDetector = ScaleGestureDetector(androidCanvasRenderer.context, object: ScaleGestureDetector.OnScaleGestureListener {
+            val gestureDetector = ScaleGestureDetector(
+                androidCanvasRenderer.context,
+                object : ScaleGestureDetector.OnScaleGestureListener {
+                    override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
+                        return true
+                    }
 
-                var lastScaleFactor = 1.0 // start value is 1.0
-                override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
-                    return true
-                }
+                    override fun onScaleEnd(detector: ScaleGestureDetector) {
 
-                override fun onScaleEnd(detector: ScaleGestureDetector) {
+                    }
 
-                }
+                    override fun onScale(detector: ScaleGestureDetector): Boolean {
+                        val diffSpan = (detector.currentSpan - detector.previousSpan).toDouble()
+                        listener(KZoomEvent(KZoomEvent.scaleDelta(diffSpan, minZoomDeltaValue, maxZoomDeltaValue)))
 
-                override fun onScale(detector: ScaleGestureDetector): Boolean {
-                    val currentScaleFactor = detector.scaleFactor
+                        return true
+                    }
 
-                    val deltaScaleFactor = currentScaleFactor - lastScaleFactor
-                    lastScaleFactor = currentScaleFactor.toDouble()
-
-                    listener(KZoomEvent(deltaScaleFactor))
-
-                    return false
-                }
-
-            })
-            val gestureDetectorVizTouchListener = object:VizTouchListener {
+                })
+            val gestureDetectorVizTouchListener = object : VizTouchListener {
                 override fun onTouchEvent(view: View, event: MotionEvent?): Boolean {
                     return gestureDetector.onTouchEvent(event)
                 }
             }
-
-            androidCanvasRenderer.onTouchListeners.add(gestureDetectorVizTouchListener)
-
-            return object : Disposable {
-                override fun dispose() {
-                    androidCanvasRenderer.onTouchListeners.remove(gestureDetectorVizTouchListener)
-                }
-
-            }
+            return AndroidEventHandle(androidCanvasRenderer, gestureDetectorVizTouchListener).also { it.init() }
         }
     }
 }
@@ -168,25 +158,33 @@ private fun addSimpleAndroidEventHandle(
     target: Any,
     listener: (KPointerEvent) -> Unit,
     action: Int
-): AndroidEventHandle {
+): AndroidActionEventHandle {
     val renderer = target as AndroidCanvasRenderer
 
     val handler = object : VizTouchListener {
         override fun onTouchEvent(view: View, event: MotionEvent?): Boolean {
 
-            if (event?.action == action) {
-                val kevent = event.convertToKEvent()
-                listener(kevent)
+            // Simple events only for single touch
+            if (event?.pointerCount == 1) {
+                if (event?.action == action) {
+                    val kevent = event.convertToKEvent()
+                    listener(kevent)
+                }
             }
+
             return true
         }
     }
 
-    return AndroidEventHandle(renderer, action, handler).also { it.init() }
+    return AndroidActionEventHandle(renderer, action, handler).also { it.init() }
 }
 
 
-data class AndroidEventHandle(val renderer: AndroidCanvasRenderer, val type: Int, val handler: VizTouchListener) :
+class AndroidActionEventHandle(renderer: AndroidCanvasRenderer, val type: Int, handler: VizTouchListener) :
+    AndroidEventHandle(renderer, handler) {
+}
+
+open class AndroidEventHandle(val renderer: AndroidCanvasRenderer, val handler: VizTouchListener) :
     Disposable {
 
     fun init() {

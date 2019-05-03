@@ -61,13 +61,29 @@ actual class KPointerClick {
 
 actual class KZoom {
     actual companion object ZoomEventListener : KEventListener<KZoomEvent> {
+
+        const val minGestureZoomDeltaValue = -10.0
+        const val maxGestureZoomDeltaValue = 10.0
+
+        const val minWheelZoomDeltaValue = -100.0
+        const val maxWheelZoomDeltaValue = 100.0
+
         override fun addNativeListener(target: Any, listener: (KZoomEvent) -> Unit): Disposable {
             val htmlElement = target.unsafeCast<HTMLElement>()
             val nativeListener = object : EventListener {
                 override fun handleEvent(event: Event) {
                     (event as WheelEvent).apply {
-                        val kZoomDelta = deltaY * -1 // invert value for same behaviour as jfx
-                        listener(KZoomEvent(kZoomDelta))
+                        // don't actually zoom/scroll in browser
+                        event.preventDefault()
+                        // invert value to work as Android & JFX
+                        val invertedDelta = deltaY * -1
+                        if (event.ctrlKey) {
+                            // wheel
+                            listener(KZoomEvent(KZoomEvent.scaleDelta(invertedDelta, minWheelZoomDeltaValue, maxWheelZoomDeltaValue)))
+                        } else {
+                            // gesture
+                            listener(KZoomEvent(KZoomEvent.scaleDelta(invertedDelta, minGestureZoomDeltaValue, maxGestureZoomDeltaValue)))
+                        }
                     }
                 }
             }

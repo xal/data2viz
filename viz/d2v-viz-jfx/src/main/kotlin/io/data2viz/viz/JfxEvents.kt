@@ -68,33 +68,42 @@ actual class KPointerClick {
 
 actual class KZoom {
     actual companion object ZoomEventListener : KEventListener<KZoomEvent> {
+        const val minGestureZoomDeltaValue = 0.8
+        const val maxGestureZoomDeltaValue = 1.2
+
+        const val minWheelZoomDeltaValue = -100.0
+        const val maxWheelZoomDeltaValue = 100.0
+
         override fun addNativeListener(target: Any, listener: (KZoomEvent) -> Unit): Disposable {
 
             val canvas = target as Canvas
 
-            canvas.setOnZoom { event: ZoomEvent ->
-
-                val zoomFactor0to2 = event.zoomFactor
-                val zoomFactorWithSign = zoomFactor0to2 - 1
-                val kZoomDeltaValue = zoomFactorWithSign * 100 * canvas.scaleY
-                listener(KZoomEvent(kZoomDeltaValue))
+            val zoomHandler = EventHandler<ZoomEvent> { event ->
+                listener(
+                    KZoomEvent(
+                        KZoomEvent.scaleDelta(
+                            event.zoomFactor,
+                            minGestureZoomDeltaValue,
+                            maxGestureZoomDeltaValue
+                        )
+                    ))
             }
 
-            canvas.setOnScroll { event: ScrollEvent ->
 
-                //                println("event deltaX = ${event.deltaX} deltaY = ${event.deltaY} isControlDown = ${event.isControlDown}")
+            val scrollHandler = EventHandler<ScrollEvent> { event ->
                 if (event.isControlDown) {
-                    listener(KZoomEvent(event.deltaY))
+                    listener(
+                        KZoomEvent(
+                            KZoomEvent.scaleDelta(
+                                event.deltaY,
+                                minWheelZoomDeltaValue,
+                                maxWheelZoomDeltaValue
+                            )
+                        ))
                 }
             }
 
-            return object : Disposable {
-                override fun dispose() {
-                    canvas.onZoom = null
-                    canvas.onScroll = null
-                }
-
-            }
+            return JvmZoomHandle(canvas, scrollHandler, zoomHandler).also { it.init() }
         }
     }
 }
@@ -147,6 +156,23 @@ data class JvmEventHandle<T : Event?>(
 
             canvas.removeEventHandler(jfxEvent, eventHandler)
         }
+    }
+}
+
+data class JvmZoomHandle(
+    val canvas: Canvas,
+    val scrollHandler: EventHandler<ScrollEvent>,
+    val zoomHandler: EventHandler<ZoomEvent>
+) : Disposable {
+
+    fun init() {
+        canvas.onScroll = scrollHandler
+        canvas.onZoom = zoomHandler
+    }
+
+    override fun dispose() {
+        canvas.onScroll = null
+        canvas.onZoom = null
     }
 }
 

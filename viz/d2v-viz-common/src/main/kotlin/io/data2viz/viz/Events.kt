@@ -111,6 +111,37 @@ class KDragEvent(
 class KZoomEvent(
     val delta: Double
 ) : KEvent {
+    companion object {
+
+        const val minDelta = -100.0
+        const val maxDelta = 100.0
+
+        fun scaleDelta(
+            currentDelta: Double,
+            originMinDelta: Double,
+            originMaxDelta: Double,
+            newMinDelta: Double = minDelta,
+            newMaxDelta: Double = maxDelta
+        ): Double {
+            val originBoundsSize = originMaxDelta - originMinDelta
+            val currentDeltaPercentInBounds = (currentDelta - originMinDelta) / originBoundsSize
+
+            val newBoundsSize = newMaxDelta - newMinDelta
+            var newDeltaValue = newMinDelta + newBoundsSize * currentDeltaPercentInBounds
+
+            if (newDeltaValue > maxDelta) {
+                newDeltaValue = maxDelta
+            }
+
+            if (newDeltaValue < minDelta) {
+                newDeltaValue = minDelta
+
+            }
+            println("scaleDelta origin = $currentDelta scaled = $newDeltaValue")
+            return newDeltaValue
+        }
+    }
+
     override fun toString(): String = "KZoomEvent(delta=$delta)"
 }
 
