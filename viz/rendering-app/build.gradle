@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-apply plugin: 'com.novoda.android-command'
+//apply plugin: 'com.novoda.android-command'
 
 buildscript {
     repositories {
         jcenter()
     }
     dependencies {
-        classpath 'com.novoda:gradle-android-command-plugin:2.0.1'
+//        classpath 'com.novoda:gradle-android-command-plugin:2.0.1'
     }
 }
 
@@ -51,47 +51,47 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
 
-
-task generateImages(type: Exec){
-    commandLine android.getAdbExe(), 'shell', 'am', 'instrument', '-w', '-r', '-e', 'debug', 'false', '-e', 'class', 'io.data2viz.viz.RenderingOnDeviceTest', 'io.data2viz.data2viz.testrenderings.test/android.support.test.runner.AndroidJUnitRunner'
-}
-
-
-afterEvaluate {
-    tasks.generateImages.dependsOn compileDebugSources, installDebug
-}
-
-task syncRenderedImages(type: com.novoda.gradle.command.Files, dependsOn: generateImages) {
-
-    script {
-        def backupDir = mkdir('build/images')
-        def deviceImageDir = '/storage/emulated/0/Android/data/io.data2viz.data2viz.testrenderings/files/Pictures/data2canvas/'
-        ls(deviceImageDir).eachLine { line ->
-            if (line.endsWith(".png")) {
-                def fileName = line.split()[7]
-                println "Pulling $fileName"
-                pull deviceImageDir + fileName , backupDir.path
-            }
-        }
-    }
-}
-
-apply plugin: 'com.moowork.node'
-
-node {
-    version = "$node_version"
-    npmVersion = "$npm_version"
-    download = true
-}
-
-task installDependencies(type: YarnTask) {
-    args = ['install']
-}
-
-
-task diffs(type: YarnTask, dependsOn: [installDependencies, syncRenderedImages]) {
-    args = ['diffs']
-}
-
+//
+//task generateImages(type: Exec){
+//    commandLine android.getAdbExe(), 'shell', 'am', 'instrument', '-w', '-r', '-e', 'debug', 'false', '-e', 'class', 'io.data2viz.viz.RenderingOnDeviceTest', 'io.data2viz.data2viz.testrenderings.test/android.support.test.runner.AndroidJUnitRunner'
+//}
+//
+//
+//afterEvaluate {
+//    tasks.generateImages.dependsOn compileDebugSources, installDebug
+//}
+//
+//task syncRenderedImages(type: com.novoda.gradle.command.Files, dependsOn: generateImages) {
+//
+//    script {
+//        def backupDir = mkdir('build/images')
+//        def deviceImageDir = '/storage/emulated/0/Android/data/io.data2viz.data2viz.testrenderings/files/Pictures/data2canvas/'
+//        ls(deviceImageDir).eachLine { line ->
+//            if (line.endsWith(".png")) {
+//                def fileName = line.split()[7]
+//                println "Pulling $fileName"
+//                pull deviceImageDir + fileName , backupDir.path
+//            }
+//        }
+//    }
+//}
+//
+//apply plugin: 'com.moowork.node'
+//
+//node {
+//    version = "$node_version"
+//    npmVersion = "$npm_version"
+//    download = true
+//}
+//
+//task installDependencies(type: YarnTask) {
+//    args = ['install']
+//}
+//
+//
+//task diffs(type: YarnTask, dependsOn: [installDependencies, syncRenderedImages]) {
+//    args = ['diffs']
+//}
+//
 
 

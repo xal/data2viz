@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-platform-android'
 apply plugin: 'kotlin-android-extensions'
-apply plugin: 'com.novoda.android-command'
+//apply plugin: 'com.novoda.android-command'
 
 buildscript {
     repositories {
         jcenter()
     }
     dependencies {
-        classpath 'com.novoda:gradle-android-command-plugin:2.0.1'
+//        classpath 'com.novoda:gradle-android-command-plugin:2.0.1'
     }
 }
 
@@ -85,28 +85,28 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
 
-
-task generateImages(type: Exec) {
-    commandLine android.getAdbExe(), 'shell', 'am', 'instrument', '-w', '-r', '-e', 'debug', 'false', '-e', 'class', 'io.data2viz.charting.RenderingOnDeviceTest', 'io.data2viz.data2canvas.test/android.support.test.runner.AndroidJUnitRunner'
-}
-
-afterEvaluate {
-    tasks.generateImages.dependsOn compileDebugSources, installDebug
-}
-
-task syncRenderedImages(type: com.novoda.gradle.command.Files, dependsOn: generateImages) {
-
-    script {
-        def backupDir = mkdir('build/images')
-        def deviceImageDir = '/storage/emulated/0/Android/data/io.data2viz.data2canvas/files/Pictures/data2canvas/'
-        ls(deviceImageDir).eachLine { line ->
-            if (line.endsWith(".png")) {
-                def fileName = line.split()[7]
-                println "Pulling $fileName"
-                pull deviceImageDir + fileName, backupDir.path
-            }
-        }
-    }
-}
+//
+//task generateImages(type: Exec) {
+//    commandLine android.getAdbExe(), 'shell', 'am', 'instrument', '-w', '-r', '-e', 'debug', 'false', '-e', 'class', 'io.data2viz.charting.RenderingOnDeviceTest', 'io.data2viz.data2canvas.test/android.support.test.runner.AndroidJUnitRunner'
+//}
+//
+//afterEvaluate {
+//    tasks.generateImages.dependsOn compileDebugSources, installDebug
+//}
+//
+//task syncRenderedImages(type: com.novoda.gradle.command.Files, dependsOn: generateImages) {
+//
+//    script {
+//        def backupDir = mkdir('build/images')
+//        def deviceImageDir = '/storage/emulated/0/Android/data/io.data2viz.data2canvas/files/Pictures/data2canvas/'
+//        ls(deviceImageDir).eachLine { line ->
+//            if (line.endsWith(".png")) {
+//                def fileName = line.split()[7]
+//                println "Pulling $fileName"
+//                pull deviceImageDir + fileName, backupDir.path
+//            }
+//        }
+//    }
+//}
 
 apply plugin: 'kotlin-android'
