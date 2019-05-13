@@ -15,7 +15,7 @@ fun transverseMercatorProjection() = transverseMercatorProjection {
 
 fun transverseMercatorProjection(init: TransverseMercatorProjection.() -> Unit) = TransverseMercatorProjection().also {
 
-    it.rotate = arrayOf(0.deg, 0.deg, 90.deg)
+    it.rotateA = arrayOf(0.deg, 0.deg, 90.deg)
     it.scale = 159.155
 }.also(init)
 
@@ -48,48 +48,48 @@ class TransverseMercatorProjector() : ProjectableInvertable {
 //};
 
 
-class TransverseMercatorProjection() : MercatorProjection(TransverseMercatorProjector()) {
+class TransverseMercatorProjection() : MutableProjection(TransverseMercatorProjector()) {
 
 
-    override var center: Array<Angle>
-        get() {
-            val it = super.center
-            val t = it[0]
-            it[0] = it[1]
-            it[1] = -t
-            return it
-        }
-        set(value) {
-            val it = value
-            val t = it[0]
-            it[0] = -it[1]
-            it[1] = t
-            super.center = it
-        }
-
-    // TODO: box/unbox perforamance
-    override var rotate: Array<Angle>
-        get() {
-
-            val original = super.rotate
-            return if (original.size > 2) {
-                arrayOf(original[0], original[1], original[2] - (90.0).deg)
-            } else {
-
-                arrayOf(original[0], original[1], (-90.0).deg)
-            }
-        }
-        set(value) {
-            val original = value
-            super.rotate = if (original.size > 2) {
-
-                arrayOf(original[0], original[1], original[2] + 90.0.deg)
-            } else {
-
-                arrayOf(original[0], original[1], (+90.0).deg)
-            }
-
-
-        }
+//    override var center: Array<Angle>
+//        get() {
+//            val it = super.center
+//            val t = it[0]
+//            it[0] = it[1]
+//            it[1] = -t
+//            return it
+//        }
+//        set(value) {
+//            val it = value
+//            val t = it[0]
+//            it[0] = -it[1]
+//            it[1] = t
+//            super.center = it
+//        }
+//
+//    // TODO: box/unbox perforamance
+//    override var rotate: Array<Angle>
+//        get() {
+//
+//            val original = super.rotate
+//            return if (original.size > 2) {
+//                arrayOf(original[0], original[1], original[2] - (90.0).deg)
+//            } else {
+//
+//                arrayOf(original[0], original[1], (-90.0).deg)
+//            }
+//        }
+//        set(value) {
+//            val original = value
+//            super.rotate = if (original.size > 2) {
+//
+//                arrayOf(original[0], original[1], original[2] + 90.0.deg)
+//            } else {
+//
+//                arrayOf(original[0], original[1], (+90.0).deg)
+//            }
+//
+//
+//        }
 
 }

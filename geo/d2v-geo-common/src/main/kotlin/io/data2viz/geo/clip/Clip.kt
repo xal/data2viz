@@ -25,156 +25,22 @@ interface ClippableHasStart : Clippable {
     val start: DoubleArray
 }
 
-interface PointFunction {
-    fun invoke(clip: Clip, x: Double, y: Double, z: Double)
-}
-
-interface LineStartFunction {
-    fun invoke(clip: Clip)
-}
-
-
-interface LineEndFunction {
-    fun invoke(clip: Clip)
-}
-
-object DefaultPointFunction : PointFunction {
-    override fun invoke(clip: Clip, x: Double, y: Double, z: Double) {
-        if (clip.clip.pointVisible(x, y)) clip.sink.point(x, y, z)
-    }
-}
-
-object RingPointFunction : PointFunction {
-    override fun invoke(clip: Clip, x: Double, y: Double, z: Double) {
-        clip.apply {
-            ring!!.add(doubleArrayOf(x, y))
-            ringSink.point(x, y, z)
-        }
-    }
-}
-
-object DefaultLineStartFunction : LineStartFunction {
-    override fun invoke(clip: Clip) {
-        clip.apply {
-            currentPoint = LinePointFunction
-            line.lineStart()
-        }
-    }
-}
-
-
-object DefaultLineEndFunction : LineEndFunction {
-    override fun invoke(clip: Clip) {
-        clip.apply {
-            currentPoint = DefaultPointFunction
-            line.lineEnd()
-        }
-    }
-}
-
-
-object RingLineStartFunction : LineStartFunction {
-    override fun invoke(clip: Clip) {
-        clip.apply {
-            ringSink.lineStart()
-            ring = mutableListOf()
-        }
-    }
-}
-
-object RingLineEndFunction : LineEndFunction {
-    override fun invoke(clip: Clip) {
-        clip.apply {
-            requireNotNull(ring, { "Error on Clip.ringEnd, ring can't be null." })
-
-            val ringList = ring!!
-
-            RingPointFunction.invoke(this, ringList[0][0], ringList[0][1], 0.0)
-
-            ringSink.lineEnd()
-
-            val clean = ringSink.clean
-            val ringSegments: MutableList<List<DoubleArray>> = ringBuffer.result()
-
-
-            ringList.removeAt(ringList.lastIndex)
-
-            polygon.add(ringList)
-            this.ring = null
-
-            if (ringSegments.isEmpty()) return
-
-            // No intersections
-            if ((clean and 1) != 0) {
-                val segment = ringSegments[0]
-                val m = segment.lastIndex
-                if (m > 0) {
-                    if (!polygonStarted) {
-                        sink.polygonStart()
-                        polygonStarted = true
-                    }
-                    sink.lineStart()
-                    (0 until m).forEach {
-                        val currentSegmentPiece = segment[it]
-                        val x = currentSegmentPiece[0]
-                        val y = currentSegmentPiece[1]
-                        sink.point(x, y, 0.0)
-                    }
-                    sink.lineEnd()
-                }
-                return
-            }
-
-            // Rejoin connected segments
-            // TODO reuse ringBuffer.rejoin()?
-            if (ringSegments.size > 1 && (clean and 2) != 0) {
-                val concat = ringSegments.removeAt(ringSegments.lastIndex).toMutableList()
-                concat.addAll(ringSegments.removeAt(0))
-                ringSegments.add(concat)
-            }
-
-            segments.add(ringSegments.filter { it.size > 1 })
-        }
-
-    }
-}
-
-
-object LinePointFunction : PointFunction {
-    override fun invoke(clip: Clip, x: Double, y: Double, z: Double) {
-        clip.line.point(x, y, z)
-    }
-
-
-}
-
-object PointRingPointFunction : PointFunction {
-    override fun invoke(clip: Clip, x: Double, y: Double, z: Double) {
-        clip.ring!!.add(doubleArrayOf(x, y))
-        clip.ringSink.point(x, y, z)
-    }
-
-}
-
-
 class Clip(val clip: ClippableHasStart, val sink: Stream) : Stream {
 
+    private val line = clip.clipLine(sink)
 
-    internal val line = clip.clipLine(sink)
+    private val ringBuffer = ClipBuffer()
+    private val ringSink = clip.clipLine(ringBuffer)
 
-    internal val ringBuffer = ClipBuffer()
-    internal val ringSink = clip.clipLine(ringBuffer)
+    private var polygonStarted = false
 
-    internal var polygonStarted = false
+    private val polygon: MutableList<List<DoubleArray>> = mutableListOf()
+    private val segments: MutableList<List<List<DoubleArray>>> = mutableListOf()
+    private var ring: MutableList<DoubleArray>? = null
 
-    internal val segments: MutableList<List<List<DoubleArray>>> = mutableListOf()
-
-    internal val polygon: MutableList<List<DoubleArray>> = mutableListOf()
-    internal var ring: MutableList<DoubleArray>? = null
-
-    internal var currentPoint: PointFunction = DefaultPointFunction
-    internal var currentLineStart: LineStartFunction = DefaultLineStartFunction
-    internal var currentLineEnd: LineEndFunction = DefaultLineEndFunction
+    private var currentPoint: (Double, Double, Double) -> Unit = ::defaultPoint
+    private var currentLineStart: () -> Unit = ::defaultLineStart
+    private var currentLineEnd: () -> Unit = ::defaultLineEnd
 
     private val compareIntersection = Comparator<Intersection> { i1, i2 ->
         val a = i1.point
@@ -185,35 +51,27 @@ class Clip(val clip: ClippableHasStart, val sink: Stream) : Stream {
     }
 
     override fun point(x: Double, y: Double, z: Double) {
-//        currentPoint(x, y, z)
-        currentPoint.invoke(this, x, y, z)
+        currentPoint(x, y, z)
     }
 
     override fun lineStart() {
-        currentLineStart.invoke(this)
+        currentLineStart()
     }
 
     override fun lineEnd() {
-        currentLineEnd.invoke(this)
+        currentLineEnd()
     }
 
     override fun polygonStart() {
-        currentPoint = PointRingPointFunction
-        currentLineStart = RingLineStartFunction
-        currentLineEnd = RingLineEndFunction
-    }
-
-    val interpolateFunction = object : InterpolateFunction {
-        override fun invoke(from: DoubleArray, to: DoubleArray, direction: Int, stream: Stream) {
-            clip.interpolate(from, to, direction, stream)
-        }
-
+        currentPoint = ::pointRing
+        currentLineStart = ::ringStart
+        currentLineEnd = ::ringEnd
     }
 
     override fun polygonEnd() {
-        currentPoint = DefaultPointFunction
-        currentLineStart = DefaultLineStartFunction
-        currentLineEnd = DefaultLineEndFunction
+        currentPoint = ::defaultPoint
+        currentLineStart = ::defaultLineStart
+        currentLineEnd = ::defaultLineEnd
 
         val startInside = polygonContains(polygon, clip.start)
 
@@ -223,7 +81,7 @@ class Clip(val clip: ClippableHasStart, val sink: Stream) : Stream {
                 polygonStarted = true
             }
 
-            rejoin(segments.flatten(), compareIntersection, startInside, interpolateFunction, sink)
+            rejoin(segments.flatten(), compareIntersection, startInside, clip::interpolate, sink)
         } else if (startInside) {
             if (!polygonStarted) {
                 sink.polygonStart()
@@ -251,5 +109,70 @@ class Clip(val clip: ClippableHasStart, val sink: Stream) : Stream {
         sink.polygonEnd()
     }
 
+    private fun defaultPoint(x: Double, y: Double, z: Double) {
+        if (clip.pointVisible(x, y)) sink.point(x, y, z)
+    }
 
+    private fun pointLine(x: Double, y: Double, z: Double) = line.point(x, y, z)
+    private fun pointRing(x: Double, y: Double, z: Double) {
+        ring!!.add(doubleArrayOf(x, y))
+        ringSink.point(x, y, z)
+    }
+
+    private fun defaultLineStart() {
+        currentPoint = ::pointLine
+        line.lineStart()
+    }
+
+    private fun defaultLineEnd() {
+        currentPoint = ::defaultPoint
+        line.lineEnd()
+    }
+
+    private fun ringStart() {
+        ringSink.lineStart()
+        ring = mutableListOf()
+    }
+
+    private fun ringEnd() {
+        requireNotNull(ring, { "Error on Clip.ringEnd, ring can't be null." })
+
+        pointRing(ring!![0][0], ring!![0][1], 0.0)
+        ringSink.lineEnd()
+
+        val clean = ringSink.clean
+        val ringSegments: MutableList<List<DoubleArray>> = ringBuffer.result().toMutableList()
+
+        ring!!.removeAt(ring!!.lastIndex)
+        polygon.add(ring!!)
+        this.ring = null
+
+        if (ringSegments.isEmpty()) return
+
+        // No intersections
+        if ((clean and 1) != 0) {
+            val segment = ringSegments[0]
+            val m = segment.lastIndex
+            if (m > 0) {
+                if (!polygonStarted) {
+                    sink.polygonStart()
+                    polygonStarted = true
+                }
+                sink.lineStart()
+                (0 until m).forEach { sink.point(segment[it][0], segment[it][1], 0.0) }
+                sink.lineEnd()
+            }
+            return
+        }
+
+        // Rejoin connected segments
+        // TODO reuse ringBuffer.rejoin()?
+        if (ringSegments.size > 1 && (clean and 2) != 0) {
+            val concat = ringSegments.removeAt(ringSegments.lastIndex).toMutableList()
+            concat.addAll(ringSegments.removeAt(0))
+            ringSegments.add(concat)
+        }
+
+        segments.add(ringSegments.filter { it.size > 1 })
+    }
 }

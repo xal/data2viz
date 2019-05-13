@@ -12,9 +12,9 @@ import kotlin.math.abs
  * Returns the spherical bounding box for the specified GeoJSON object.
  * The bounding box is represented by an Extent where:
  *  - x0 is the minimum longitude,
- *  - phi0 is the minimum latitude,
+ *  - y0 is the minimum latitude,
  *  - x1 is maximum longitude,
- *  - and phi1 is the maximum latitude.
+ *  - and y1 is the maximum latitude.
  *
  * All coordinates are given in degrees.
  *

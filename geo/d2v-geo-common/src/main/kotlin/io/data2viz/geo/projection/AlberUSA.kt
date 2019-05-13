@@ -51,17 +51,19 @@ fun alberUSAProjection(init: Projection.() -> Unit) = AlberUSAProjection().also 
 //// parallels for each region comes from USGS, which is published here:
 //// http://egsc.usgs.gov/isb/pubs/MapProjections/projections.html#albers
 class AlberUSAProjection() : Projection {
+    override var center: DoubleArray= doubleArrayOf()
+    override var rotate: DoubleArray = doubleArrayOf()
 
 
     val lower48 = albersProjection()
     val alaska = conicEqualAreaProjection {
-        rotate = arrayOf(154.0.deg, 0.0.deg)
-        center = arrayOf((-2.0).deg, 58.5.deg)
+        rotateA = arrayOf(154.0.deg, 0.0.deg)
+        centerA = arrayOf((-2.0).deg, 58.5.deg)
         parallels = arrayOf(55.0.deg, 65.0.deg)
     }
     val hawaii = conicEqualAreaProjection {
-        rotate = arrayOf(157.0.deg, 0.0.deg)
-        center = arrayOf((-3.0).deg, 19.9.deg)
+        rotateA = arrayOf(157.0.deg, 0.0.deg)
+        centerA = arrayOf((-3.0).deg, 19.9.deg)
         parallels = arrayOf(8.0.deg, 18.0.deg)
 
     }
@@ -105,21 +107,21 @@ class AlberUSAProjection() : Projection {
 
         return projection.invert(x, y)
     }
-
-    override var center: Array<Angle>
-        get() = lower48.center
-        set(value) {
-            lower48.center = value
-            hawaii.center = value
-            alaska.center = value
-        }
-    override var rotate: Array<Angle>
-        get() = lower48.rotate
-        set(value) {
-            lower48.rotate = value
-            hawaii.rotate = value
-            alaska.rotate = value
-        }
+//
+//    override var center: Array<Angle>
+//        get() = lower48.center
+//        set(value) {
+//            lower48.center = value
+//            hawaii.center = value
+//            alaska.center = value
+//        }
+//    override var rotate: Array<Angle>
+//        get() = lower48.rotate
+//        set(value) {
+//            lower48.rotate = value
+//            hawaii.rotate = value
+//            alaska.rotate = value
+//        }
     override var preClip: (Stream) -> Stream
         get() = lower48.preClip
         set(value) {

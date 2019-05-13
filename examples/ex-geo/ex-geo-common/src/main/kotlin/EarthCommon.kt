@@ -18,8 +18,8 @@ val allProjections = hashMapOf(
     "albersUSA" to alberUSAProjection() {
         scale = 500.0
     },
-    "azimuthalEqualArea" to azimuthalEqualAreaProjection(),
-    "azimuthalEquidistant" to azimuthalEquidistant(),
+    "azimuthalEqualArea" to azimuthalEqualAreaProjection(){},
+    "azimuthalEquidistant" to azimuthalEquidistant(){},
     "conicConformal" to conicConformalProjection(),
     "conicEqual" to conicEqualAreaProjection(),
     "conicEquidistant" to conicEquidistantProjection(),
@@ -27,9 +27,9 @@ val allProjections = hashMapOf(
     "equirectangular" to equirectangularProjection(),
     "gnomonic" to gnomonicProjection(),
     "identity" to identityProjection(),
-    "mercator" to mercatorProjection(),
+    "mercator" to mercatorProjection(){},
     "naturalEarth1" to naturalEarth1Projection(),
-    "orthographic" to orthographicProjection(),
+    "orthographic" to orthographic (){},
     "stereographic" to stereographicProjection(),
     "transverseMercator" to transverseMercatorProjection()
 )
@@ -95,7 +95,7 @@ fun geoViz(world: GeoJsonObject, projectionName: String, vizWidth: Double = 960.
 
 
         if(isNeedRotate) {
-            projectionOuter.rotate = arrayOf(0.0.deg, 0.0.deg, 0.0.deg)
+            projectionOuter.rotate = doubleArrayOf(0.0, 0.0, 0.0)
         }
 
         animation { now: Double ->
@@ -135,7 +135,7 @@ private fun doRotate(
     val rotate = geoPathOuter.projection.rotate
     val k = 60.0
 
-    rotate[0] = ((unixTime % (360 * k)) / k).deg
+    rotate[0] = ((unixTime % (360 * k)) / k)
 
 
     pathOuter.clearPath()

@@ -7,7 +7,9 @@ import io.data2viz.math.EPSILON
 import io.data2viz.math.TAU
 import io.data2viz.math.toDegrees
 import io.data2viz.math.toRadians
-import kotlin.math.*
+import kotlin.math.acos
+import kotlin.math.cos
+import kotlin.math.sin
 
 class GeoCircle<D> {
 
@@ -98,13 +100,8 @@ fun geoCircle(
 
     var t = newT0
     while (if (direction > 0) t > newT1 else t < newT1) {
-        val cartesian0 = cosRadius
-        val cartesian1 = -sinRadius * cos(t)
-        val cartesian2 = -sinRadius * sin(t)
-
-        val spher0 = atan2(cartesian1, cartesian0)
-        val spher1 = asin(cartesian2)
-        stream.point(spher0, spher1, .0)
+        val point = spherical(doubleArrayOf(cosRadius, -sinRadius * cos(t), -sinRadius * sin(t)))
+        stream.point(point[0], point[1], .0)
         t -= step
     }
 }
