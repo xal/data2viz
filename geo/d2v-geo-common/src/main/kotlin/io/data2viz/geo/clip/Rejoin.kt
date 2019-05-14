@@ -14,23 +14,32 @@ data class Intersection(
     var previous: Intersection? = null
 )
 
-interface InterpolateFunction {
-    fun invoke(from: DoubleArray, to: DoubleArray, direction: Int, stream: Stream)
-}
 /**
  * A generalized polygon clipping algorithm: given a polygon that has been cut into its visible line segments,
  * and rejoins the segments by interpolating along the clip edge.
  */
 fun rejoin(
     segments: List<List<DoubleArray>>, compareIntersection: Comparator<Intersection>,
-//    startInside: Boolean, interpolate: (DoubleArray, DoubleArray, Int, Stream) -> Unit, stream: Stream
-    startInside: Boolean, interpolateFunction: InterpolateFunction, stream: Stream
+    startInside: Boolean, interpolate: (DoubleArray, DoubleArray, Int, Stream) -> Unit, stream: Stream
 ) {
+
+//    val segments1 =   if(segments.size == 2) {
+//        val mutableListOf = mutableListOf<List<DoubleArray>>()
+//        mutableListOf.add(segments[0])
+//        mutableListOf
+//
+//    } else {
+//     segments
+//
+//    }
+//    println("rejoin segments ${segments1.size} startInside = $startInside")
 
     val subject = mutableListOf<Intersection>()
     val clip = mutableListOf<Intersection>()
 
-    segments.forEach {segment ->
+
+
+    segments.forEach { segment ->
         val n = segment.size - 1
         if (n <= 0) return
 
@@ -100,8 +109,7 @@ fun rejoin(
                 if (isSubject) {
                     if (points != null) points.forEach { stream.point(it[0], it[1], .0) }
                 } else {
-                    interpolateFunction.invoke(current.point, current.next!!.point, 1, stream)
-//                    interpolate(current.point, current.next!!.point, 1, stream)
+                    interpolate(current.point, current.next!!.point, 1, stream)
                 }
                 current = current.next!!
             } else {
@@ -109,8 +117,7 @@ fun rejoin(
                     points = current.previous!!.points
                     if (points != null) points.asReversed().forEach { stream.point(it[0], it[1], .0) }
                 } else {
-//                    interpolate(current.point, current.previous!!.point, -1, stream)
-                    interpolateFunction.invoke(current.point, current.previous!!.point, -1, stream)
+                    interpolate(current.point, current.previous!!.point, -1, stream)
                 }
                 current = current.previous!!
             }

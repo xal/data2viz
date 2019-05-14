@@ -5,6 +5,8 @@ import io.data2viz.math.QUARTERPI
 import io.data2viz.math.TAU
 import kotlin.math.*
 
+var polygonContainsCount = 0;
+
 fun polygonContains(polygon: List<List<DoubleArray>>, point: DoubleArray): Boolean {
     val lambda = point[0]
     val phi = point[1]
@@ -68,8 +70,14 @@ fun polygonContains(polygon: List<List<DoubleArray>>, point: DoubleArray): Boole
     // from the point to the South pole.  If it is zero, then the point is the
     // same side as the South pole.
 
-    return (angle < -EPSILON || angle < EPSILON && sum < -EPSILON) xor ((winding and 1) != 0)
+    val b = (angle < -EPSILON || angle < EPSILON && sum < -EPSILON) xor ((winding and 1) != 0)
+    if(b) {
+        polygonContainsCount++
+    }
+    return b
 }
+
+
 
 fun polygonContainsNew(polygon: List<List<DoubleArray>>, point: DoubleArray): Boolean {
     val lambda = point[0]

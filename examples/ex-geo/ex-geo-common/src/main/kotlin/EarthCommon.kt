@@ -1,8 +1,11 @@
 package io.data2viz.examples.geo
 
 import io.data2viz.color.Colors
+import io.data2viz.geo.clip.Clip
+import io.data2viz.geo.clip.ClipCircle
 import io.data2viz.geo.path.GeoPath
 import io.data2viz.geo.path.geoPath
+import io.data2viz.geo.polygonContainsCount
 import io.data2viz.geo.projection.*
 import io.data2viz.geojson.GeoJsonObject
 import io.data2viz.math.deg
@@ -76,6 +79,13 @@ fun geoViz(world: GeoJsonObject, projectionName: String, vizWidth: Double = 960.
             textContent = projectionName
         }
 
+        val angleText = text {
+            x = 10.0
+            y = 80.0
+            fill = Colors.Web.red
+            textContent = "Angle: 0"
+        }
+
 
         val pathOuter = PathNode().apply {
             stroke = Colors.Web.black
@@ -94,8 +104,8 @@ fun geoViz(world: GeoJsonObject, projectionName: String, vizWidth: Double = 960.
         }
 
 
-        if(isNeedRotate) {
-            projectionOuter.rotate = arrayOf(0.0.deg, 0.0.deg, 0.0.deg)
+        if (isNeedRotate) {
+            projectionOuter.rotate = arrayOf(103.0.deg, 0.0.deg, 0.0.deg)
         }
 
         animation { now: Double ->
@@ -108,7 +118,10 @@ fun geoViz(world: GeoJsonObject, projectionName: String, vizWidth: Double = 960.
 
 
             if (isNeedRotate) {
-                doRotate(geoPathOuter, pathOuter, world)
+                val angle = doRotate(geoPathOuter, pathOuter, world)
+                angleText.textContent = "Angle: $angle"
+            } else {
+                angleText.textContent = "Angle: 0"
             }
 
         }
@@ -129,18 +142,76 @@ private fun doRotate(
     geoPathOuter: GeoPath,
     pathOuter: PathNode,
     world: GeoJsonObject
-) {
+): Double {
     val unixTime = Date().getTime()
 
     val rotate = geoPathOuter.projection.rotate
-    val k = 60.0
+    var k = 60.0
 
-    rotate[0] = ((unixTime % (360 * k)) / k).deg
+    k  = 10.00
 
 
+    var angle = ((unixTime % (360 * k)) / k).deg
+
+
+    val koef = (angle.deg % 360) / 360
+
+
+
+//    rotate[0] = (97 + 3.5 * koef).deg
+    rotate[0] = (97.1 + 0.2 * koef).deg
+//    rotate[0] = angle
+
+
+    ClipCircle.countStartLine = 0
+    ClipCircle.pointVisible = 0
+    ClipCircle.intersectCount = 0
+    ClipCircle.interpolateCount = 0
+    ClipCircle.intersectsCount = 0
+    ClipCircle.intersectCountA = 0
+    ClipCircle.intersectCountB = 0
+    ClipCircle.clipLineCount = 0
+    ClipCircle.cnullCount = 0
+    ClipCircle.beforecnullCount = 0
+    ClipCircle.beforebeforecnullCount = 0
+    ClipCircle.intersectsNotNullCount = 0
+    ClipCircle.notbeforebeforecnullCount = 0
+    ClipCircle.pointCount = 0
+    ClipCircle.point0NullCount = 0
+    ClipCircle.notbeforebeforecnullCountInner = 0
+    ClipCircle.vTrueCount = 0
+    Clip.polygonEndCount = 0
+    Clip.polygonStartedCount = 0
+    Clip.notEmptyCount = 0
+    Clip.startInsideCount = 0
+
+    Clip.baselineStart = 0
+    Clip.baselineEnd = 0
+    Clip.baselinePoint= 0
+    Clip.baselinePolygonStart = 0
+    Clip.baselinePolygonEnd = 0
+
+    polygonContainsCount = 0
     pathOuter.clearPath()
     geoPathOuter.path(world)
     geoPathOuter.projection.rotate = rotate
+        println("${Clip.baselineStart} ${Clip.baselineEnd} ${Clip.baselinePoint} ${Clip.baselinePolygonStart} ${Clip.baselinePolygonEnd}")
+
+//    println("${ClipCircle.intersectCountA} ${ClipCircle.intersectCountB}")
+//    println("clipLineCount = ${ClipCircle.clipLineCount}")
+//    println("pointVisible = ${ClipCircle.pointVisible}")
+//    println("vTrueCount = ${ClipCircle.vTrueCount}")
+//    println("notbeforebeforecnullCountInner = ${ClipCircle.notbeforebeforecnullCountInner} point0NullCount = ${ClipCircle.point0NullCount} pointCount = ${ClipCircle.pointCount} notbeforebeforecnullCount = ${ClipCircle.notbeforebeforecnullCount} beforebeforecnullCount = ${ClipCircle.beforebeforecnullCount} beforecnullCount = ${ClipCircle.beforecnullCount} cnullCount ${ClipCircle.cnullCount} intersectsNotNullCount ${ClipCircle.intersectsNotNullCount}")
+//    println("intersectsNotNullCount ${ClipCircle.intersectsNotNullCount}")
+//    println("${ClipCircle.intersectCount} ${ClipCircle.interpolateCount} ${ClipCircle.intersectsCount} ${ClipCircle.clipLineCount} ")
+
+//    println("clip ${Clip.polygonEndCount} ${Clip.polygonStartedCount} ${Clip.notEmptyCount} ${Clip.startInsideCount}")
+//    println("preclip " + geoPathOuter.projection.preClip.)
+//    println("polygonContainsCount " + polygonContainsCount)
+//    println("ClipCircle.countStartLine " + ClipCircle.countStartLine + " pointVisible " + ClipCircle.pointVisible)
+//    println("ClipCircle.countStartLine " + ClipCircle.countStartLine + " pointVisible " + ClipCircle.pointVisible)
+
+    return rotate[0].deg
 }
 
 object FPS {

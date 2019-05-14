@@ -20,6 +20,28 @@ fun clipCircle(radius: Double) = { stream: Stream -> Clip(ClipCircle(radius), st
  */
 class ClipCircle(val radius: Double) : ClippableHasStart {
 
+    companion object {
+
+        var countStartLine = 0
+        var pointVisible = 0
+        var intersectCount = 0
+        var intersectCountA = 0
+        var intersectCountB = 0
+
+        var interpolateCount = 0
+        var intersectsCount = 0
+        var intersectsNotNullCount = 0
+        var cnullCount = 0
+        var beforecnullCount = 0
+        var beforebeforecnullCount = 0
+        var vTrueCount = 0
+        var notbeforebeforecnullCount = 0
+        var notbeforebeforecnullCountInner = 0
+        var pointCount = 0
+        var point0NullCount = 0
+        var clipLineCount = 0
+    }
+
     private val cr = cos(radius)
     private val delta = 6.0.toRadians()
     private val smallRadius = cr > 0
@@ -28,12 +50,21 @@ class ClipCircle(val radius: Double) : ClippableHasStart {
     override val start: DoubleArray
         get() = if (smallRadius) doubleArrayOf(0.0, -radius) else doubleArrayOf(-PI, radius - PI)
 
+
+    init {
+//        println("Clip $radius $cr $delta $smallRadius $notHemisphere")
+    }
+
     override fun pointVisible(x: Double, y: Double): Boolean {
-        return cos(x) * cos(y) > cr
+        val b = cos(x) * cos(y) > cr
+        if(b) {
+            pointVisible++
+        }
+        return b
     }
 
     override fun clipLine(stream: Stream): ClipStream {
-
+        clipLineCount++
         return object : ClipStream {
 
             private var _clean = 0
@@ -46,6 +77,7 @@ class ClipCircle(val radius: Double) : ClippableHasStart {
                 get() = _clean or ((if (v00 && v0) 1 else 0) shl 1)
 
             override fun point(x: Double, y: Double, z: Double) {
+                pointCount++
                 val point1 = doubleArrayOf(x, y)
                 var point2: DoubleArray?
                 var v = pointVisible(x, y)
@@ -55,6 +87,7 @@ class ClipCircle(val radius: Double) : ClippableHasStart {
                     if (v) code(x + (if (x < 0) PI else -PI), y) else 0
                 }
                 if (point0 == null) {
+                    point0NullCount++
                     v00 = v
                     v0 = v
                     if (v) stream.lineStart()
@@ -63,8 +96,10 @@ class ClipCircle(val radius: Double) : ClippableHasStart {
                 // Handle degeneracies.
                 // TODO ignore if not clipping polygons.
                 if (v != v0) {
+                    notbeforebeforecnullCount++
                     point2 = intersect(point0!!, point1)
                     if (point2 == null || pointEqual(point0!!, point2) || pointEqual(point1, point2)) {
+                        notbeforebeforecnullCountInner++
                         point1[0] += EPSILON
                         point1[1] += EPSILON
                         v = pointVisible(point1[0], point1[1])
@@ -72,8 +107,10 @@ class ClipCircle(val radius: Double) : ClippableHasStart {
                 }
 
                 if (v != v0) {
+                    beforebeforecnullCount++
                     _clean = 0
                     if (v) {
+                        vTrueCount++;
                         // outside going in
                         stream.lineStart()
                         point2 = intersect(point1, point0!!)
@@ -86,12 +123,16 @@ class ClipCircle(val radius: Double) : ClippableHasStart {
                     }
                     point0 = point2
                 } else if (notHemisphere && point0 != null && smallRadius xor v) {
-
+                    beforecnullCount++
                     // If the codes for two points are different, or are both zero,
                     // and there this segment intersects with the small circle.
+//                    println("c = $c c0 = $c0")
                     if ((c and c0) == 0) {
+                        cnullCount++
                         val t = intersects(point1, point0!!)
+
                         if (t != null) {
+                            intersectsNotNullCount++
                             _clean = 0
                             if (smallRadius) {
                                 stream.lineStart()
@@ -116,7 +157,10 @@ class ClipCircle(val radius: Double) : ClippableHasStart {
                 c0 = c
             }
 
+
             override fun lineStart() {
+                countStartLine++
+
                 v00 = false
                 v0 = false
                 _clean = 1
@@ -127,14 +171,17 @@ class ClipCircle(val radius: Double) : ClippableHasStart {
                 point0 = null
             }
         }
+
     }
 
     override fun interpolate(from: DoubleArray?, to: DoubleArray?, direction: Int, stream: Stream) {
+        interpolateCount++
         geoCircle(stream, radius, delta, direction, from, to)
     }
 
     // Intersects the great circle between a and b with the clip circle.
     private fun intersect(a: DoubleArray, b: DoubleArray): DoubleArray? {
+        intersectCount++
         val pa = cartesian(a)
         val pb = cartesian(b)
 
@@ -149,6 +196,7 @@ class ClipCircle(val radius: Double) : ClippableHasStart {
         //if (!determinant) return !two && a;
         // Two polar points.
         if (determinant == .0) return a
+        intersectCountA++
 
         val c1 = cr * n2n2 / determinant
         val c2 = -cr * n1n2 / determinant
@@ -165,6 +213,8 @@ class ClipCircle(val radius: Double) : ClippableHasStart {
 
         if (t2 < 0) return null
 
+        intersectCountB++
+
         val t = sqrt(t2)
         var q = cartesianScale(u, (-w - t) / uu)
         q = cartesianAdd(q, A)
@@ -175,6 +225,7 @@ class ClipCircle(val radius: Double) : ClippableHasStart {
 
     // TODO : factorize with intersect !
     private fun intersects(a: DoubleArray, b: DoubleArray): Array<DoubleArray>? {
+        intersectsCount++
         val pa = cartesian(a)
         val pb = cartesian(b)
 
@@ -187,7 +238,7 @@ class ClipCircle(val radius: Double) : ClippableHasStart {
         val determinant = n2n2 - n1n2 * n1n2
 
         // Two polar points.
-        if (determinant == .0) return null
+        if (determinant == .0 || determinant == Double.NaN) return null
 
         val c1 = cr * n2n2 / determinant
         val c2 = -cr * n1n2 / determinant
@@ -234,13 +285,32 @@ class ClipCircle(val radius: Double) : ClippableHasStart {
         // Check that the first point is between a and b.
         val test = if (meridian) {
             if (polar) {
-                (phi0 + phi1 > 0) xor (q[1] < if (abs(q[0] - lambda0) < EPSILON) phi0 else phi1)
-            } else (q[1] in phi0..phi1)
+
+                val t  = (phi0 + phi1 > 0) xor (q[1] < if (abs(q[0] - lambda0) < EPSILON) phi0 else phi1)
+
+                if(t) println("1")
+                t
+            } else {
+
+                val t  =(phi0 <= q[1] && q[1]  <= phi1)
+                if(t) {
+//                    println("determinant $determinant")
+//                    println("2tt1 ${a[0]} ${a[1]} ${b[0]} ${b[1]} cr =$cr")
+//                    println("2ttt $phi0 ${q[1]} $phi1")
+                }
+
+                t
+            }
         } else {
-            (delta > PI) xor (q[0] in lambda0..lambda1)
+            val t =(delta > PI) xor (q[0] in lambda0..lambda1)
+            if(t) println("3")
+            t
         }
 
+
+//        println("polar = $polar meridian = $meridian delta=$delta $lambda1 $lambda0")
         if (test) {
+
             var q1 = cartesianScale(u, (-w + t) / uu)
             q1 = cartesianAdd(q1, A)
             return arrayOf(q, spherical(q1))
