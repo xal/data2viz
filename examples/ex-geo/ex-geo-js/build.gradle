@@ -1,8 +1,8 @@
 
 dependencies {
-    expectedBy project(":ex-stream:ex-stream-common")
-    compile project(":stream:d2v-stream-common")
-    compile project(":stream:d2v-stream-js")
+    expectedBy project(":ex-geo:ex-geo-common")
+    compile project(":geo:d2v-geo-common")
+    compile project(":geo:d2v-geo-js")
     compile project(":data2viz:d2v-data2viz-js")
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core-js:$coroutines_version"
 }
@@ -15,12 +15,12 @@ kotlin {
 }
 
 task copyJsonTestFiles(type: Copy) {
-    from "../ex-stream-common/src/main/resources"
+    from "../ex-geo-common/src/main/resources"
     into "."
 }
 
 task copyJsonToDist(type: Copy) {
-    from "../ex-stream-common/src/main/resources"
+    from "../ex-geo-common/src/main/resources"
     into "build/dist"
 }
 

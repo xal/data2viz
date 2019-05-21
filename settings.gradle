@@ -41,9 +41,9 @@ def d2v = [
         ":format:d2v-format-js",
         ":format:d2v-format-jvm",
 
-        ":stream:d2v-stream-common",
-        ":stream:d2v-stream-js",
-        ":stream:d2v-stream-jvm",
+        ":geo:d2v-geo-common",
+        ":geo:d2v-geo-js",
+        ":geo:d2v-geo-jvm",
 
         ":hexbin:d2v-hexbin-common",
         ":hexbin:d2v-hexbin-js",
@@ -159,10 +159,10 @@ def examples = [
         ":ex-full",
         ":ex-full:ex-full-js",
 
-        ":ex-stream",
-        ":ex-stream:ex-stream-common", 
-        ":ex-stream:ex-stream-js", 
-        ":ex-stream:ex-stream-jfx",
+        ":ex-geo",
+        ":ex-geo:ex-geo-common", 
+        ":ex-geo:ex-geo-js", 
+        ":ex-geo:ex-geo-jfx",
         
         ":ex-line-of-sight", 
         ":ex-line-of-sight:ex-line-of-sight-common", 
