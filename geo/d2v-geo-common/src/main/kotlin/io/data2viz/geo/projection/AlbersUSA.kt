@@ -1,8 +1,6 @@
 package io.data2viz.geo.projection
 
-import io.data2viz.geo.MultiplexStream
-import io.data2viz.geo.Projection
-import io.data2viz.geo.Stream
+import io.data2viz.geo.*
 import io.data2viz.geojson.GeoJsonObject
 import io.data2viz.geom.Extent
 import io.data2viz.math.Angle
@@ -13,7 +11,7 @@ fun albersUSAProjection() = albersUSAProjection {
 
 }
 
-fun albersUSAProjection(init: AlberUSAProjection.() -> Unit) = AlberUSAProjection().also {
+fun albersUSAProjection(init: AlbersUSAProjection.() -> Unit) = AlbersUSAProjection().also {
     it.scale = 1070.0
 }.also(init)
 
@@ -22,13 +20,16 @@ fun albersUSAProjection(init: AlberUSAProjection.() -> Unit) = AlberUSAProjectio
 //// scale to 1285 and adjust the translate accordingly. The set of standard
 //// parallels for each region comes from USGS, which is published here:
 //// http://egsc.usgs.gov/isb/pubs/MapProjections/projections.html#albers
-class AlberUSAProjection() : Projection {
+class AlbersUSAProjection() : BaseProjection() {
+    override fun createProjectTransform() =
+        object : Projectable {
+            override fun projectLambda(lambda: Double, phi: Double): Double =
+                this@AlbersUSAProjection.projectLambda(lambda, phi)
 
-    override fun translate(x: Double, y: Double) {
-        this.x = x;
-        this.y = y;
-        recenter()
-    }
+            override fun projectPhi(lambda: Double, phi: Double): Double =
+                this@AlbersUSAProjection.projectPhi(lambda, phi)
+
+        }
 
 
     val lower48 = albersProjection()
@@ -43,9 +44,6 @@ class AlberUSAProjection() : Projection {
         parallels = arrayOf(8.0.deg, 18.0.deg)
 
     }
-
-    var translateX = 0.0
-    var translateY = 0.0
 
     val pointStream = object : Stream {
 
@@ -145,34 +143,24 @@ class AlberUSAProjection() : Projection {
         alaska.recenter()
     }
 
-    protected var cache: Stream? = null
-    protected var cacheStream: Stream? = null
 
-    // TODO Change
-    protected fun getCachedStream(stream: Stream): Stream? =
-        if (cache != null && cacheStream == stream) cache else null
-
-    // TODO Change
-    protected fun cache(stream1: Stream, stream2: Stream) {
-        cache = stream2
-        cacheStream = stream1
-    }
-
-    override var x: Double = 0.0
-        get() = field
+    override var x: Double
+        get() = super.x
         set(value) {
-//            super.x = value
-            translateX += value
-            field = value
+            super.x = value
             translateNestedProjections()
+        }
 
+    override var y: Double
+        get() = super.y
+        set(value) {
+            super.y = value
+            translateNestedProjections()
         }
 
     private fun translateNestedProjections() {
         var k = lower48.scale
 
-        var x = translateX
-        var y = translateY;
         lower48.translate(x, y)
         lower48.clipExtent = Extent(x - 0.455 * k, y - 0.238 * k, x + 0.455 * k, y + 0.238 * k)
 
@@ -201,14 +189,6 @@ class AlberUSAProjection() : Projection {
         reset()
     }
 
-    override var y: Double = 0.0
-        get() = field
-        set(value) {
-//            super.y = value
-            translateY = value
-            field = value
-            translateNestedProjections()
-        }
 
     override var scale: Double
         get() = lower48.scale
@@ -228,21 +208,7 @@ class AlberUSAProjection() : Projection {
             reset()
         }
 
-
-//    private fun fullCycleStream(stream: Stream) =
-//        MultiplexStream(lower48.stream())
-
-
-    override fun stream(stream: Stream): Stream {
-        var cachedStream = getCachedStream(stream)
-        if (cachedStream == null) {
-            cachedStream = fullCycleStream(stream)
-            cache(cachedStream, cachedStream)
-        }
-        return cachedStream
-    }
-
-    fun fullCycleStream(stream: Stream): Stream {
+    override fun fullCycleStream(stream: Stream): Stream {
 
         return MultiplexStream(
             listOf(
@@ -251,15 +217,6 @@ class AlberUSAProjection() : Projection {
                 hawaii.stream(stream)
             )
         )
-
-
-//        return if (cache != null && cacheStream == stream) {
-//            cache
-//        } else {
-//
-//        }
-//        return super.stream(stream)
-        //        return cache && cacheStream === stream ? cache : cache = multiplex([lower48.stream(cacheStream = stream), alaska.stream(stream), hawaii.stream(stream)]);
     }
 
     override fun fitExtent(extent: Extent, geo: GeoJsonObject): Projection =
@@ -276,12 +233,6 @@ class AlberUSAProjection() : Projection {
 
     override fun fitSize(width: Double, height: Double, geo: GeoJsonObject): Projection =
         io.data2viz.geo.fitSize(lower48, width, height, geo)
-
-
-    fun reset() {
-        cache = null
-        cacheStream = null
-    }
 
 }
 
