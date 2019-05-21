@@ -1,11 +1,11 @@
 dependencies {
-    expectedBy project(":geo:d2v-geo-common")
+    expectedBy project(":stream:d2v-stream-common")
     compile project(":core:d2v-core-jvm")
     compile "io.data2viz.geojson:geojson-jvm:$geojson_version"
 }
 
 task copyJsonTestFiles(type: Copy) {
-    from "../d2v-geo-common/src/test/resources"
+    from "../d2v-stream-common/src/test/resources"
     into "${buildDir}/classes/kotlin/test"
 }
 

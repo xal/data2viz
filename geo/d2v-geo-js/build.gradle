@@ -1,5 +1,5 @@
 dependencies {
-    expectedBy project(":geo:d2v-geo-common")
+    expectedBy project(":stream:d2v-stream-common")
     compile project(":core:d2v-core-js")
     compile "io.data2viz.geojson:geojson-js:$geojson_version"
 }
