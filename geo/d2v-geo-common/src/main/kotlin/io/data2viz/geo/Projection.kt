@@ -349,6 +349,8 @@ abstract class BaseProjection() : Projection {
     }
 
     open protected fun fullCycleStream(stream: Stream): Stream {
+        // TODO: hack should be removed
+        projectResample = resample(projectTransform, delta2)
         return transformRadians(transformRotate(rotator)(preClip(projectResample(postClip(stream)))))
     }
 
@@ -360,9 +362,6 @@ abstract class BaseProjection() : Projection {
     }
 }
 
-/**
- * Todo document
- */
 open class MutableProjection(val projection: Projectable) : BaseProjection() {
     override fun createProjectTransform(): Projectable {
         return object : Projectable {
@@ -377,6 +376,13 @@ open class MutableProjection(val projection: Projectable) : BaseProjection() {
 
             override fun projectPhi(lambda: Double, phi: Double): Double =
                 internalProjectPhi(projection.projectPhi(lambda, phi))
+
+
+//        override fun project(point: DoubleArray) {
+//            projection.project(point)
+//            point[0] = internalProjectLambda(point[0])
+//            point[1] = internalProjectPhi(point[1])
+//        }
 
         }
     }
