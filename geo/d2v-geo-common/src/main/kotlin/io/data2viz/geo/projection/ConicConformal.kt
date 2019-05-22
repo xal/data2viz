@@ -1,7 +1,7 @@
 package io.data2viz.geo.projection
 
-import io.data2viz.geo.ConditionalProjector
-import io.data2viz.geo.Projector
+import io.data2viz.geo.projection.common.ConditionalProjector
+import io.data2viz.geo.projection.common.Projector
 import io.data2viz.math.EPSILON
 import io.data2viz.math.HALFPI
 import io.data2viz.math.deg
