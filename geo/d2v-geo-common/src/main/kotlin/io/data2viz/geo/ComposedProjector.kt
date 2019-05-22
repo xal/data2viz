@@ -1,26 +1,20 @@
 package io.data2viz.geo
 
-import kotlin.math.*
-
-abstract class ComposedProjector:ProjectableInvertable {
+abstract class ComposedProjector : ProjectableInvertable {
 
 
-    override fun invert(x: Double, y: Double): DoubleArray
-     = activeProjector.invert(x, y)
+    override fun invert(x: Double, y: Double): DoubleArray = activeProjector.invert(x, y)
 
-    override fun project(x: Double, y: Double): DoubleArray
-            = activeProjector.project(x, y)
+    override fun project(x: Double, y: Double): DoubleArray = activeProjector.project(x, y)
 
-    override fun projectLambda(lambda: Double, phi: Double): Double
-            = activeProjector.projectLambda(lambda, phi)
+    override fun projectLambda(lambda: Double, phi: Double): Double = activeProjector.projectLambda(lambda, phi)
 
-    override fun projectPhi(lambda: Double, phi: Double): Double
-            = activeProjector.projectPhi(lambda, phi)
+    override fun projectPhi(lambda: Double, phi: Double): Double = activeProjector.projectPhi(lambda, phi)
 
     abstract val activeProjector: ProjectableInvertable
 }
 
-abstract class ConditionalProjector():ComposedProjector() {
+abstract class ConditionalProjector() : ComposedProjector() {
 
     abstract val baseProjector: ProjectableInvertable
     abstract val nestedProjector: ProjectableInvertable
@@ -28,7 +22,7 @@ abstract class ConditionalProjector():ComposedProjector() {
 
 
     override val activeProjector: ProjectableInvertable
-        get() = if(isNeedUseBaseProjector) {
+        get() = if (isNeedUseBaseProjector) {
             baseProjector
         } else {
             nestedProjector

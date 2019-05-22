@@ -15,7 +15,6 @@ class CylindricalEqualAreaProjector() : ProjectableInvertable {
 
     constructor(phi:Double) : this() {
         phi0 = phi
-        recalculate()
     }
 
     var phi0:Double = 0.0

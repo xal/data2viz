@@ -15,9 +15,21 @@ fun conicEqualAreaProjection(init: ConicProjection.() -> Unit) = conicProjection
 }
 
 class ConicEqualAreaConditionalProjector(
-    val conicEqualAreaProjector: ConicEqualAreaProjector = ConicEqualAreaProjector(),
-    val cylindricalEqualAreaProjector: CylindricalEqualAreaProjector = CylindricalEqualAreaProjector()
-) : ConicProjectable by conicEqualAreaProjector, ConditionalProjector() {
+    private val conicEqualAreaProjector: ConicEqualAreaProjector = ConicEqualAreaProjector(),
+    private val cylindricalEqualAreaProjector: CylindricalEqualAreaProjector = CylindricalEqualAreaProjector(
+        conicEqualAreaProjector.phi0
+    )
+) : ConicProjectable, ConditionalProjector() {
+    override var phi0: Double
+        get() = conicEqualAreaProjector.phi0
+        set(value) {
+            conicEqualAreaProjector.phi0 = value
+        }
+    override var phi1: Double
+        get() = conicEqualAreaProjector.phi1
+        set(value) {
+            conicEqualAreaProjector.phi1 = value
+        }
 
     override val baseProjector: ProjectableInvertable
         get() = cylindricalEqualAreaProjector
@@ -25,14 +37,8 @@ class ConicEqualAreaConditionalProjector(
         get() = conicEqualAreaProjector
     override val isNeedUseBaseProjector: Boolean
         get() = conicEqualAreaProjector.isPossibleToUseProjector
-
-    override var phi0: Double
-        get() = conicEqualAreaProjector.phi0
-        set(value) {
-            cylindricalEqualAreaProjector.phi0 = value
-            conicEqualAreaProjector.phi0 = value
-        }
 }
+
 
 class ConicEqualAreaProjector : ConicProjectable, ProjectableInvertable {
 
@@ -47,36 +53,37 @@ class ConicEqualAreaProjector : ConicProjectable, ProjectableInvertable {
             recalculate()
         }
 
-    private var sy0 = sin(phi0)
-    private var n = (sy0 + sin(phi1)) / 2;
-    private var c = 1 + sy0 * (2 * n - sy0)
-    private var r0 = sqrt(c) / n;
-    public var isPossibleToUseProjector = abs(n) < EPSILON
+    private var sy0 = sy0()
+    private var n = n()
+    private var c = c()
+    private var r0 = r0()
+    var isPossibleToUseProjector = isPossibleToUse()
+        private set
 
     private fun recalculate() {
-
-        sy0 = sin(phi0)
-        n = (sy0 + sin(phi1)) / 2;
-        c = 1 + sy0 * (2 * n - sy0)
-        r0 = sqrt(c) / n;
-        isPossibleToUseProjector = abs(n) < EPSILON
+        sy0 = sy0()
+        n = n();
+        c = c()
+        r0 = r0();
+        isPossibleToUseProjector = isPossibleToUse()
     }
+
+    private fun isPossibleToUse() = abs(n) < EPSILON
+
+    private fun r0() = sqrt(c) / n
+
+    private fun c() = 1 + sy0 * (2 * n - sy0)
+
+    private fun n() = (sy0 + sin(phi1)) / 2
+
+    private fun sy0() = sin(phi0)
 
 
     override fun invert(x: Double, y: Double): DoubleArray {
         var r0y = r0 - y;
         return doubleArrayOf(atan2(x, abs(r0y)) / n * sign(r0y), asin((c - (x * x + r0y * r0y) * n * n) / (2 * n)))
-
     }
 
-
-    override fun project(lambda: Double, phi: Double): DoubleArray {
-
-        var r = sqrt(c - 2 * n * sin(phi)) / n
-        val lambdaN = lambda * n
-        return doubleArrayOf(r * sin(lambda), r0 - r * cos(lambdaN));
-
-    }
 
     override fun projectLambda(lambda: Double, phi: Double): Double {
 

@@ -21,9 +21,19 @@ fun tany(y: Double): Double {
 }
 
 class ConicConformalConditionalProjector(
-    val conicConformalProjector: ConicConformalProjector = ConicConformalProjector(),
-    val mercatorProjector: MercatorProjector = MercatorProjector()
-) : ConicProjectable by conicConformalProjector, ConditionalProjector() {
+    private val conicConformalProjector: ConicConformalProjector = ConicConformalProjector(),
+    private val mercatorProjector: MercatorProjector = MercatorProjector()
+) : ConicProjectable, ConditionalProjector() {
+    override var phi0: Double
+        get() = conicConformalProjector.phi0
+        set(value) {
+            conicConformalProjector.phi0 = value
+        }
+    override var phi1: Double
+        get() = conicConformalProjector.phi1
+        set(value) {
+            conicConformalProjector.phi1 = value
+        }
 
     override val baseProjector: ProjectableInvertable
         get() = mercatorProjector
@@ -35,14 +45,6 @@ class ConicConformalConditionalProjector(
 
 class ConicConformalProjector : ConicProjectable, ProjectableInvertable {
 
-    var cy0: Double = 0.0
-    var n: Double = 0.0
-    var f: Double = 0.0
-    var isPossibleToUseProjector: Boolean = false
-
-    init {
-        recalculate()
-    }
 
     override var phi0: Double = 0.0
         set(value) {
@@ -55,17 +57,34 @@ class ConicConformalProjector : ConicProjectable, ProjectableInvertable {
             recalculate()
         }
 
+    private var cy0 = cy0()
+    private var n = n()
+    private var f = f()
+    var isPossibleToUseProjector = isPossibleToUse()
+        private set
+
+
     private fun recalculate() {
 
-        cy0 = cos(phi0)
-        n = if (phi0.equals(phi1)) {
+        cy0 = cy0()
+        n = n()
+        f = f()
+        isPossibleToUseProjector = isPossibleToUse()
+    }
+
+    private fun isPossibleToUse() = (n == 0.0 || n == Double.NaN)
+
+    private fun f() = cy0 * (tany(phi0).pow(n)) / n
+
+    private fun n(): Double {
+        return if (phi0.equals(phi1)) {
             sin(phi0)
         } else {
             log(cy0, cos(phi1)) / log(tany(phi1), tany(phi0))
         }
-        f = cy0 * (tany(phi0).pow(n)) / n
-        isPossibleToUseProjector = (n == 0.0 || n == Double.NaN)
     }
+
+    private fun cy0() = cos(phi0)
 
 
     override fun invert(x: Double, y: Double): DoubleArray {
