@@ -1,6 +1,6 @@
 package io.data2viz.geo.projection
 
-import io.data2viz.geo.projection.common.ConditionalProjector
+import io.data2viz.geo.projection.common.BaseConditionalProjector
 import io.data2viz.geo.projection.common.Projector
 import io.data2viz.math.EPSILON
 import io.data2viz.math.deg
@@ -9,16 +9,16 @@ import kotlin.math.*
 fun conicEquidistantProjection() = conicEquidistantProjection {}
 
 fun conicEquidistantProjection(init: ConicProjection.() -> Unit) =
-    conicProjection(ConicEquidistantConditionalProjector()) {
+    conicProjection(ConicEquidistantBaseConditionalProjector()) {
         scale = 131.154
         center = arrayOf(0.0.deg, 13.9389.deg)
         init()
     }
 
-class ConicEquidistantConditionalProjector(
+class ConicEquidistantBaseConditionalProjector(
     private val conicEquidistantProjector: ConicEquidistantProjector = ConicEquidistantProjector(),
     private val equirectangularProjector: EquirectangularProjector = EquirectangularProjector()
-) : ConicProjectable, ConditionalProjector() {
+) : ConicProjectable, BaseConditionalProjector() {
 
     override var phi0: Double
         get() = conicEquidistantProjector.phi0

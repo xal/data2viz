@@ -1,5 +1,7 @@
 package io.data2viz.geo.stream
 
+import io.data2viz.math.toRadians
+
 
 /**
  * This stream delegates all calls to the delegate, allowing to override only what should
@@ -12,4 +14,9 @@ open class DelegateStreamAdapter(val delegate: Stream) : Stream {
     override fun polygonStart()                             = delegate.polygonStart()
     override fun polygonEnd()                               = delegate.polygonEnd()
     override fun sphere()                                   = delegate.sphere()
+}
+
+
+class TransformRadiansStreamAdapter(stream: Stream) : DelegateStreamAdapter(stream) {
+    override fun point(x: Double, y: Double, z: Double) = delegate.point(x.toRadians(), y.toRadians(), z.toRadians())
 }
