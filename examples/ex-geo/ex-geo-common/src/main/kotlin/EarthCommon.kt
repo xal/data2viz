@@ -54,8 +54,8 @@ fun geoViz(world: GeoJsonObject, projectionName: String, vizWidth: Double = 500.
 
 
     val projection = allProjections[projectionName]!!
-    projection.x = vizWidth / 2.0
-    projection.y = vizHeight / 2.0
+    projection.translateX = vizWidth / 2.0
+    projection.translateY = vizHeight / 2.0
 
 
     return viz {
@@ -142,7 +142,7 @@ private fun rotateByTime(
     val minute = 1000 * 60
     val ratio = (unixTime % minute) / minute
     val angle = ratio * 360 * fullRotationCyclesPerMinute % 360
-    // Rotate only x axys
+    // Rotate only translateX axys
     rotate[0] = angle.deg
 
     geoPathNode.rotateByAngles(rotate)
