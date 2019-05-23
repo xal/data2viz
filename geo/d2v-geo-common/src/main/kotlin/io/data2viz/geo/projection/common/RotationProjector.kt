@@ -6,6 +6,9 @@ import io.data2viz.math.toDegrees
 import io.data2viz.math.toRadians
 import kotlin.math.*
 
+/**
+ * TODO: refactor & docs
+ */
 
 private fun identityProjection(x: Double, y: Double) = doubleArrayOf(
     identityProjectionX(x),
