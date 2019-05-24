@@ -1,5 +1,6 @@
 package io.data2viz.geo.projection
 
+import io.data2viz.geo.projection.common.NoCommonCalculationsProjector
 import io.data2viz.geo.projection.common.Projection
 import io.data2viz.geo.projection.common.Projector
 import io.data2viz.geo.projection.common.projection
@@ -18,7 +19,7 @@ fun naturalEarthProjection(init: Projection.() -> Unit) =
 /**
  * The Natural Earth http://www.shadedrelief.com/NE_proj/ projection is a pseudocylindrical projection designed by Tom Patterson. It is neither conformal nor equal-area, but appealing to the eye for small-scale maps of the whole world.
  */
-class NaturalEarthProjection : Projector {
+class NaturalEarthProjection : NoCommonCalculationsProjector {
 
 
     override fun invertLambda(lambda: Double, phi: Double): Double {

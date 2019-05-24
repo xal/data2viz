@@ -1,22 +1,24 @@
 package io.data2viz.geo.projection
 
+import io.data2viz.geo.projection.common.NoCommonCalculationsProjector
 import io.data2viz.geo.projection.common.Projector
 import kotlin.math.asin
 import kotlin.math.cos
 import kotlin.math.sin
 
 
-class CylindricalEqualAreaProjector() : Projector {
+class CylindricalEqualAreaProjector() : NoCommonCalculationsProjector {
 
-    constructor(phi:Double) : this() {
+
+    constructor(phi: Double) : this() {
         phi0 = phi
     }
 
-    var phi0:Double = 0.0
-    set(value) {
-        field = value
-        recalculate()
-    }
+    var phi0: Double = 0.0
+        set(value) {
+            field = value
+            recalculate()
+        }
 
     var cosPhi0: Double = 0.0
 
@@ -37,9 +39,8 @@ class CylindricalEqualAreaProjector() : Projector {
     }
 
     override fun invertPhi(lambda: Double, phi: Double): Double {
-        return  asin(phi * cosPhi0)
+        return asin(phi * cosPhi0)
     }
-
 
 
 }

@@ -9,7 +9,8 @@ import kotlin.math.*
 /**
  * TODO: docs
  */
-class RotationProjector(lambda: Angle, phi: Angle, gamma: Angle? = null) : Projector {
+class RotationProjector(lambda: Angle, phi: Angle, gamma: Angle? = null) : NoCommonCalculationsProjector {
+
 
     val rotator =
         createRotateRadiansProjector(
@@ -18,16 +19,30 @@ class RotationProjector(lambda: Angle, phi: Angle, gamma: Angle? = null) : Proje
             gamma?.rad ?: 0.0
         )
 
+
     override fun projectLambda(lambda: Double, phi: Double): Double =
         rotator.projectLambda(lambda.toRadians(), phi.toRadians()).toDegrees()
 
     override fun projectPhi(lambda: Double, phi: Double): Double =
         rotator.projectPhi(lambda.toRadians(), phi.toRadians()).toDegrees()
+    
+//    override fun project(lambda: Double, phi: Double): DoubleArray {
+//        val p = rotator.project(lambda.toRadians(), phi.toRadians())
+//        return doubleArrayOf(p[0].toDegrees(), p[1].toDegrees())
+//    }
 
-    override fun invert(lambda: Double, phi: Double): DoubleArray {
-        val p = rotator.invert(lambda.toRadians(), phi.toRadians())
-        return doubleArrayOf(p[0].toDegrees(), p[1].toDegrees())
-    }
+    override fun invertLambda(lambda: Double, phi: Double): Double =
+        rotator.invertLambda(lambda.toRadians(), phi.toRadians()).toDegrees()
+
+    override fun invertPhi(lambda: Double, phi: Double): Double =
+        rotator.invertPhi(lambda.toRadians(), phi.toRadians()).toDegrees()
+
+
+//    override fun invert(lambda: Double, phi: Double): DoubleArray {
+//        val p = rotator.invert(lambda.toRadians(), phi.toRadians())
+//        return doubleArrayOf(p[0].toDegrees(), p[1].toDegrees())
+//    }
+
 }
 
 

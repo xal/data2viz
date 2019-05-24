@@ -18,7 +18,7 @@ fun mercatorProjection(init: Projection.() -> Unit) = MercatorProjection(Mercato
     scale = 961 / TAU
 }.apply(init)
 
-class MercatorProjector : Projector {
+class MercatorProjector : NoCommonCalculationsProjector {
     override fun projectLambda(lambda: Double, phi: Double): Double = lambda
 
     override fun projectPhi(lambda: Double, phi: Double): Double = ln(tan((HALFPI + phi) / 2))
