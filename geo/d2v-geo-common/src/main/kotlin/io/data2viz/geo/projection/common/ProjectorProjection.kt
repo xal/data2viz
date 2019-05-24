@@ -40,7 +40,6 @@ private fun transformRotate(rotate: Projector): (stream: Stream) -> DelegateStre
 open class ProjectorProjection(val projection: Projector) : CachedProjection() {
 
 
-
     protected var _translateX = 480.0
     protected var _translateY = 250.0
 
@@ -172,11 +171,11 @@ open class ProjectorProjection(val projection: Projector) : CachedProjection() {
     }
 
 
-    override fun project(lambda: Double, phi: Double): DoubleArray {
-        val lambdaRadians = lambda.toRadians()
-        val phiRadians = phi.toRadians()
-        return composedTransformationsProjector.project(lambdaRadians, phiRadians)
-    }
+//    override fun project(lambda: Double, phi: Double): DoubleArray {
+//        val lambdaRadians = lambda.toRadians()
+//        val phiRadians = phi.toRadians()
+//        return composedTransformationsProjector.project(lambdaRadians, phiRadians)
+//    }
 
     // TODO why translateAndScaleProjector? Maybe composedTransformationsProjector?
     override fun projectLambda(lambda: Double, phi: Double): Double =
@@ -246,10 +245,6 @@ class TranslateAndScaleProjector(
     var recenterDx: Double,
     var recenterDy: Double
 ) : Projector {
-    override fun project(lambda: Double, phi: Double): DoubleArray {
-        return projection.project(lambda, phi)
-    }
-
     override fun invert(lambda: Double, phi: Double): DoubleArray {
         return projection.invert(lambda, phi)
     }

@@ -20,7 +20,7 @@ fun orthographicProjection(init: ProjectorProjection.() -> Unit) =
 /**
  * The orthographic projection.
  */
-class OrthographicProjector : NoCommonCalculationsProjector {
+class OrthographicProjector : Projector {
     override fun projectLambda(lambda: Double, phi: Double): Double = cos(phi) * sin(lambda)
 
     override fun projectPhi(lambda: Double, phi: Double): Double = sin(phi)
