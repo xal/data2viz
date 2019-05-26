@@ -45,7 +45,7 @@ interface StreamPreClip {
  *  1 - no intersections;
  *  2 - there were intersections, and the first and last segments should be rejoined.
  */
-internal interface ClipStream : Stream {
+interface ClipStream : Stream {
     var clean: Int
 }
 
